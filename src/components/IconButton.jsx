@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 export default class IconButton extends React.Component {
   render () {
@@ -7,13 +7,13 @@ export default class IconButton extends React.Component {
         value={this.props.value} onClick={this.props.handleClick}>
         <i aria-hidden='true' className={`fa ${this.props.icon}`}></i>
       </button>
-    );
+    )
   }
 }
 
-IconButton.propType = {
+IconButton.propTypes = {
   value: React.PropTypes.string,
   handleClick: React.PropTypes.func,
-  icon: React.PropTypes.icon,
+  icon: React.PropTypes.string,
   id: React.PropTypes.string
-};
+}

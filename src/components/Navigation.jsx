@@ -1,22 +1,22 @@
-import React from 'react';
-import { Link } from 'react-router';
-import { serialize } from './helpers';
+import React from 'react'
+import { Link } from 'react-router'
+import { serialize } from './helpers'
 
 function createPath (view, param, query) {
-  let path = '/' + view;
-  if (param) path += '/' + param;
-  if (query[1]) path += `?${query[0]}=${query[1]}`;
-  return path;
+  let path = '/' + view
+  if (param) path += '/' + param
+  if (query[1]) path += `?${query[0]}=${query[1]}`
+  return path
 }
 
 export default class Navigation extends React.Component {
   render () {
     const chartPath = createPath('charts', serialize(this.props.selectedTown),
-      ['chart', serialize(this.props.selectedChartType)]);
+      ['chart', serialize(this.props.selectedChartType)])
     const mapPath = createPath('maps', serialize(this.props.selectedMonth),
-      ['flat', serialize(this.props.selectedFlatType)]);
+      ['flat', serialize(this.props.selectedFlatType)])
     const areaPath = createPath('areas', serialize(this.props.selectedMonth),
-      ['flat', serialize(this.props.selectedFlatType)]);
+      ['flat', serialize(this.props.selectedFlatType)])
 
     return (
       <header className='header'>
@@ -28,14 +28,14 @@ export default class Navigation extends React.Component {
         </ul>
         {this.props.selector}
       </header>
-    );
+    )
   }
 }
 
-Navigation.propType = {
+Navigation.propTypes = {
   selectedTown: React.PropTypes.string,
   selectedMonth: React.PropTypes.string,
   selectedChartType: React.PropTypes.string,
   selectedFlatType: React.PropTypes.string,
   selector: React.PropTypes.element
-};
+}

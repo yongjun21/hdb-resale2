@@ -1,29 +1,29 @@
-import React from 'react';
+import React from 'react'
 
 export default class Table extends React.Component {
   shouldComponentUpdate (nextProps) {
-    return this.props.rows !== nextProps.rows;
+    return this.props.rows !== nextProps.rows
   }
 
   componentDidUpdate () {
-    this.refs.title.scrollIntoView();
+    this.refs.title.scrollIntoView()
   }
 
   render () {
     const colNames = this.props.colNames.map((colName, i) => (
       <th key={i}>{colName}</th>
-    ));
+    ))
     const rows = this.props.rows.map((r, i) => (
       <tr key={i}>{r.map((d, ii) => <td key={ii}>{d}</td>)}</tr>
-    ));
+    ))
 
     const beforeContents = this.props.colNames.map((cn, i) => (
       `.chart-detail td:nth-of-type(${i + 1}):before { content: "${cn}"}`
-    )).join('\n');
+    )).join('\n')
 
     const noBeforeContents = this.props.colNames.map((cn, i) => (
       `.chart-detail td:nth-of-type(${i + 1}):before { content: ""}`
-    )).join('\n');
+    )).join('\n')
 
     const styleBlock = [
       '@media (max-width: 750px) {',
@@ -32,7 +32,7 @@ export default class Table extends React.Component {
       '@media (min-width: 751px) {',
       noBeforeContents,
       '}'
-    ];
+    ]
 
     return (
       <div className='chart-detail'>
@@ -44,12 +44,12 @@ export default class Table extends React.Component {
           <tbody>{rows}</tbody>
         </table>
       </div>
-    );
+    )
   }
 }
 
-Table.propType = {
+Table.propTypes = {
   title: React.PropTypes.string,
-  colNames: React.PropTypes.arrayOf(React.PropTypes.string),
-  rows: React.PropTypes.arrayOf(React.PropTypes.arrayOf(React.PropTypes.string))
-};
+  colNames: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
+  rows: React.PropTypes.arrayOf(React.PropTypes.array).isRequired
+}

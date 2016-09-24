@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 export default class Loader extends React.Component {
   render () {
@@ -6,10 +6,10 @@ export default class Loader extends React.Component {
       <div className='loader-overlay' hidden={this.props.hidden}>
         <i className='loading fa fa-spinner fa-pulse'></i>
       </div>
-    );
+    )
   }
 }
 
-Loader.propType = {
+Loader.propTypes = {
   hidden: React.PropTypes.bool
-};
+}

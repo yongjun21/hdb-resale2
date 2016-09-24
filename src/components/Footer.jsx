@@ -1,8 +1,8 @@
-import React from 'react';
-import { getMonthYear } from './helpers';
+import React from 'react'
+import { getMonthYear } from './helpers'
 
 function parseDate (date) {
-  return date ? date.slice(8, 10) + ' ' + getMonthYear(date) : '';
+  return date ? date.slice(8, 10) + ' ' + getMonthYear(date) : ''
 }
 
 export default class Footer extends React.Component {
@@ -13,17 +13,17 @@ export default class Footer extends React.Component {
           Data retrieved <span className='retrieve-date'>{parseDate(this.props.retrieveDate)}</span> from <a href='https://data.gov.sg/dataset/resale-flat-prices'>data.gov.sg</a>.
         </div>
         <div className='footer-text'>
-          Developed by <a href='https://github.com/yongjun21'>Yong Jun</a>, <a href='https://github.com/caalberts'>Albert Salim</a> &amp; <a href='https://github.com/hongkheng'>Yap Hoong Kheng</a>.
+          Developed by <a href='https://github.com/yongjun21'>Yong Jun</a>, <a href='https://github.com/caalberts'>Albert Salim</a> &amp <a href='https://github.com/hongkheng'>Yap Hoong Kheng</a>.
         </div>
         <div className='footer-text'>
           <a className='footer-terms' href='#' onClick={this.props.handleAccept}>Terms of Use</a>
         </div>
       </footer>
-    );
+    )
   }
 }
 
-Footer.propType = {
-  retrieveDate: React.PropTypes.object,
+Footer.propTypes = {
+  retrieveDate: React.PropTypes.string,
   handleAccept: React.PropTypes.func
-};
+}

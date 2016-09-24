@@ -1,23 +1,23 @@
-import React from 'react';
+import React from 'react'
 
 export class DropDownList extends React.Component {
   render () {
     let listNodes = this.props.selections.map((item, index) => (
       <option key={index} value={item}>{item}</option>
-    ));
+    ))
     return (
       <select className='dropdown-select' value={this.props.selectedValue} onChange={this.props.handleChange}>
         {listNodes}
       </select>
-    );
+    )
   }
 }
 
-DropDownList.propType = {
+DropDownList.propTypes = {
   selections: React.PropTypes.arrayOf(React.PropTypes.string),
   selectedValue: React.PropTypes.string,
   handleChange: React.PropTypes.func
-};
+}
 
 export class ChartSelector extends React.Component {
   render () {
@@ -35,18 +35,18 @@ export class ChartSelector extends React.Component {
             handleChange={this.props.updateChartType} />
         </form>
       </div>
-    );
+    )
   }
 }
 
-ChartSelector.propType = {
+ChartSelector.propTypes = {
   townList: React.PropTypes.arrayOf(React.PropTypes.string),
   chartType: React.PropTypes.arrayOf(React.PropTypes.string),
   selectedTown: React.PropTypes.string,
   selectedChartType: React.PropTypes.string,
   updateTown: React.PropTypes.func,
   updateChartType: React.PropTypes.func
-};
+}
 
 export class MapSelector extends React.Component {
   render () {
@@ -64,18 +64,18 @@ export class MapSelector extends React.Component {
             handleChange={this.props.updateFlatType} />
         </form>
       </div>
-    );
+    )
   }
 }
 
-MapSelector.propType = {
+MapSelector.propTypes = {
   monthList: React.PropTypes.arrayOf(React.PropTypes.string),
   flatType: React.PropTypes.arrayOf(React.PropTypes.string),
   selectedMonth: React.PropTypes.string,
   selectedFlatType: React.PropTypes.string,
   updateMonth: React.PropTypes.func,
   updateFlatType: React.PropTypes.func
-};
+}
 
 export class AreaSelector extends React.Component {
   render () {
@@ -93,15 +93,15 @@ export class AreaSelector extends React.Component {
             handleChange={this.props.updateFlatType2} />
         </form>
       </div>
-    );
+    )
   }
 }
 
-AreaSelector.propType = {
+AreaSelector.propTypes = {
   monthList: React.PropTypes.arrayOf(React.PropTypes.string),
   flatType: React.PropTypes.arrayOf(React.PropTypes.string),
   selectedMonth: React.PropTypes.string,
   selectedFlatType: React.PropTypes.string,
   updateMonth2: React.PropTypes.func,
   updateFlatType2: React.PropTypes.func
-};
+}

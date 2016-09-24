@@ -1,14 +1,14 @@
-import React from 'react';
-import sortByOrder from 'lodash.sortbyorder';
+import React from 'react'
+import sortBy from 'lodash/sortBy'
 
-import Table from './Table';
-import IconButton from './IconButton';
-import Loader from './Loader';
-import { capitalizeFirstLetters, getMonthYear, googleMapsStyles } from './helpers.js';
+import Table from './Table'
+import IconButton from './IconButton'
+import Loader from './Loader'
+import { capitalizeFirstLetters, getMonthYear, googleMapsStyles } from './helpers.js'
 
 export default class Maps extends React.Component {
   constructor (props) {
-    super(props);
+    super(props)
 
     this.state = {
       isLoading: false,
@@ -17,97 +17,97 @@ export default class Maps extends React.Component {
         colNames: [],
         rows: []
       }
-    };
+    }
 
-    this.plotHeatmap = this.plotHeatmap.bind(this);
-    this.renderData = this.renderData.bind(this);
-    this.listAllTransactions = this.listAllTransactions.bind(this);
-    this.resetMap = this.resetMap.bind(this);
+    this.plotHeatmap = this.plotHeatmap.bind(this)
+    this.renderData = this.renderData.bind(this)
+    this.listAllTransactions = this.listAllTransactions.bind(this)
+    this.resetMap = this.resetMap.bind(this)
   }
 
   plotHeatmap (month, flatType) {
     this.props.db.get('HM' + month)
     .then(doc => {
-      this.renderData(doc);
+      this.renderData(doc)
       if (doc.lastUpdate < this.props.lastUpdate) {
         this.getData(month).then(dataPoints => {
-          doc.dataPoints = dataPoints;
-          doc.lastUpdate = this.props.lastUpdate;
+          doc.dataPoints = dataPoints
+          doc.lastUpdate = this.props.lastUpdate
           this.props.db.put(doc)
             .then(console.log.bind(console))
-            .catch(console.error.bind(console));
-          this.renderData(doc);
-        });
+            .catch(console.error.bind(console))
+          this.renderData(doc)
+        })
       }
     })
     .catch(() => {
-      this.heatmap.setMap(null);
+      this.heatmap.setMap(null)
       this.setState({
         isLoading: true
-      });
+      })
       this.getData(month).then(dataPoints => {
         const doc = {
           '_id': 'HM' + month,
           'lastUpdate': this.props.lastUpdate,
           'dataPoints': dataPoints
-        };
+        }
         this.props.db.put(doc)
           .then(console.log.bind(console))
-          .catch(console.error.bind(console));
-        this.renderData(doc);
-      });
-    });
+          .catch(console.error.bind(console))
+        this.renderData(doc)
+      })
+    })
   }
 
   getData (month) {
-    console.log('retrieving data from MongoDB', month);
-    const url = window.location.protocol + '//' + window.location.host + '/heatmap?month=' + month;
-    const headers = { Accept: 'application/json' };
+    console.log('retrieving data from MongoDB', month)
+    const url = window.location.protocol + '//' + window.location.host + '/heatmap?month=' + month
+    const headers = { Accept: 'application/json' }
     return window.fetch(url, headers).then(res => res.json()).then(results => {
       return results.reduce((dataPoints, result) => {
         result.dataPoints.forEach(pt => {
-          pt[2] = Math.pow(pt[2], 1.5);
-        });
-        return Object.assign(dataPoints, {[result.flat_type]: result.dataPoints});
-      }, {});
-    });
+          pt[2] = Math.pow(pt[2], 1.5)
+        })
+        return Object.assign(dataPoints, {[result.flat_type]: result.dataPoints})
+      }, {})
+    })
   }
 
   renderData (dataObj) {
     if (dataObj._id.slice(2) !== this.props.selectedMonth) {
-      console.warn('overlapping queries');
-      return;
+      console.warn('overlapping queries')
+      return
     }
 
-    let dataPoints = [];
+    let dataPoints = []
     if (this.props.selectedFlatType !== 'ALL') {
-      dataPoints = dataObj.dataPoints[this.props.selectedFlatType];
+      dataPoints = dataObj.dataPoints[this.props.selectedFlatType]
     } else {
       this.props.flatList.forEach(flatType => {
-        if (!(flatType in dataObj.dataPoints)) return;
-        dataPoints = dataPoints.concat(dataObj.dataPoints[flatType]);
-      });
+        if (!(flatType in dataObj.dataPoints)) return
+        dataPoints = dataPoints.concat(dataObj.dataPoints[flatType])
+      })
     }
 
     const ticks = dataPoints.map(tick => ({
       location: new google.maps.LatLng(tick[0], tick[1]),
       weight: tick[2]
-    }));
-    this.heatmap.setData(ticks);
-    this.heatmap.setMap(this.map);
+    }))
+    this.heatmap.setData(ticks)
+    this.heatmap.setMap(this.map)
 
     this.setState({
       isLoading: false
-    });
+    })
   }
 
   resetMap () {
-    this.map.setCenter(this.googleMapsSettings.center);
-    this.map.setZoom(this.googleMapsSettings.zoom);
+    this.map.setCenter(this.googleMapsSettings.center)
+    this.map.setZoom(this.googleMapsSettings.zoom)
   }
 
   listAllTransactions (lat, lng, radius, month, flat_type) { //eslint-disable-line
-    const url = window.location.protocol + '//' + window.location.host + '/nearby';
+    const url = window.location.protocol + '//' + window.location.host + '/nearby'
     window.fetch(url, {
       method: 'POST',
       headers: {
@@ -123,29 +123,29 @@ export default class Maps extends React.Component {
             colNames: [],
             rows: []
           }
-        });
-        console.log('No result around selected location');
-        return;
+        })
+        console.log('No result around selected location')
+        return
       }
 
       const resID = [
         '8c00bf08-9124-479e-aeca-7cc411d884c4',
         '83b2fc37-ce8c-4df4-968b-370fd818138b'
-      ];
-      const resource = month < '2012-03' ? resID[0] : resID[1];
+      ]
+      const resource = month < '2012-03' ? resID[0] : resID[1]
       Promise.all(json.map(street_name => { //eslint-disable-line
-        const filters = {street_name, month};
-        if (flat_type !== 'ALL') Object.assign(filters, {flat_type}); // eslint-disable-line
+        const filters = {street_name, month}
+        if (flat_type !== 'ALL') Object.assign(filters, {flat_type}) // eslint-disable-line
         const dataURL = 'https://data.gov.sg/api/action/datastore_search?resource_id=' +
-          resource + '&filters=' + JSON.stringify(filters);
+          resource + '&filters=' + JSON.stringify(filters)
         return window.fetch(dataURL, { Accept: 'application/json' })
-          .then(data => data.json());
+          .then(data => data.json())
       }))
       .then(results => results.reduce((records, res) => {
         if (res.result && res.result.records) {
-          return records.concat(res.result.records);
+          return records.concat(res.result.records)
         } else {
-          return records;
+          return records
         }
       }, []))
       .then(records => {
@@ -156,13 +156,13 @@ export default class Maps extends React.Component {
               colNames: [],
               rows: []
             }
-          });
-          console.log('No result around selected location');
-          return;
+          })
+          console.log('No result around selected location')
+          return
         }
 
         const title = records.length + ' transaction' + (records.length > 1 ? 's' : '') +
-          ' in ' + getMonthYear(month) + ' <span class="nowrap">around selected location</span>';
+          ' in ' + getMonthYear(month) + ' <span class="nowrap">around selected location</span>'
         const colNames = [
           '#',
           'Block',
@@ -172,10 +172,10 @@ export default class Maps extends React.Component {
           'Lease Commence',
           'Floor Area (sqm)',
           'Resale Price (SGD)'
-        ];
+        ]
 
-        const transactions = sortByOrder(records,
-          record => +record.resale_price, 'desc');
+        const transactions = sortBy(records,
+          record => +record.resale_price).reverse()
         const rows = transactions.map((transaction, index) => ([
           index + 1,
           transaction.block.trim(),
@@ -185,23 +185,23 @@ export default class Maps extends React.Component {
           transaction.lease_commence_date,
           transaction.floor_area_sqm,
           (+transaction.resale_price).toLocaleString()
-        ]));
+        ]))
 
         this.setState({
           table: {title, colNames, rows}
-        });
-        this.map.setCenter({lat, lng});
-        this.map.setZoom(15);
-        this.map.setOptions({scrollwheel: false});
+        })
+        this.map.setCenter({lat, lng})
+        this.map.setZoom(15)
+        this.map.setOptions({scrollwheel: false})
         const scrollToTopListener = (e) => {
           if (window.scrollY === 0) {
-            window.removeEventListener('scroll', scrollToTopListener);
-            this.map.setOptions({scrollwheel: true});
+            window.removeEventListener('scroll', scrollToTopListener)
+            this.map.setOptions({scrollwheel: true})
           }
-        };
-        window.addEventListener('scroll', scrollToTopListener);
-      });
-    });
+        }
+        window.addEventListener('scroll', scrollToTopListener)
+      })
+    })
   }
 
   componentDidMount () {
@@ -209,17 +209,17 @@ export default class Maps extends React.Component {
       this.googleMapsSettings = {
         center: new google.maps.LatLng(1.352083, 103.819836),
         zoom: 11
-      };
+      }
       this.map = new google.maps.Map(this.refs.map, {
         center: this.googleMapsSettings.center,
         zoom: this.googleMapsSettings.zoom,
         minZoom: 11,
         maxZoom: 16,
         styles: googleMapsStyles.blueWater
-      });
+      })
       this.heatmap = new google.maps.visualization.HeatmapLayer({
         radius: 7
-      });
+      })
       this.drawing = new google.maps.drawing.DrawingManager({
         drawingMode: 'circle',
         drawingControlOptions: {
@@ -232,62 +232,62 @@ export default class Maps extends React.Component {
           strokeWeight: 0.5,
           strokeColor: 'black'
         }
-      });
-      let panLimits;
+      })
+      let panLimits
       google.maps.event.addListenerOnce(this.map, 'bounds_changed', () => {
-        const bounds = this.map.getBounds();
-        const sw = bounds.getSouthWest();
-        const ne = bounds.getNorthEast();
+        const bounds = this.map.getBounds()
+        const sw = bounds.getSouthWest()
+        const ne = bounds.getNorthEast()
         panLimits = new google.maps.LatLngBounds({
           lat: sw.lat() * 0.75 + ne.lat() * 0.25,
           lng: sw.lng() * 0.75 + ne.lng() * 0.25
         }, {
           lat: sw.lat() * 0.25 + ne.lat() * 0.75,
           lng: sw.lng() * 0.25 + ne.lng() * 0.75
-        });
-      });
-      let lastCenter = this.map.getCenter();
+        })
+      })
+      let lastCenter = this.map.getCenter()
       this.map.addListener('center_changed', () => {
-        const newCenter = this.map.getCenter();
-        if (panLimits.contains(newCenter)) lastCenter = newCenter;
-        else this.map.setCenter(lastCenter);
-      });
+        const newCenter = this.map.getCenter()
+        if (panLimits.contains(newCenter)) lastCenter = newCenter
+        else this.map.setCenter(lastCenter)
+      })
       this.drawing.addListener('circlecomplete', c => {
-        const center = c.getCenter();
-        const radius = Math.min(c.getRadius(), 500);
+        const center = c.getCenter()
+        const radius = Math.min(c.getRadius(), 500)
         this.listAllTransactions(center.lat(), center.lng(), radius,
-          this.props.selectedMonth, this.props.selectedFlatType);
-        c.setMap(null);
-      });
-      this.drawing.setMap(this.map);
+          this.props.selectedMonth, this.props.selectedFlatType)
+        c.setMap(null)
+      })
+      this.drawing.setMap(this.map)
 
-      this.plotHeatmap(this.props.selectedMonth, this.props.selectedFlatType);
+      this.plotHeatmap(this.props.selectedMonth, this.props.selectedFlatType)
       window.onresize = () => {
-        this.resetMap();
-      };
-    };
-    if (window.googleMapsLoaded) initMap();
-    else window.googleOnLoadCallback = initMap;
+        this.resetMap()
+      }
+    }
+    if (window.googleMapsLoaded) initMap()
+    else window.googleOnLoadCallback = initMap
   }
 
   componentWillReceiveProps (nextProps) {
     if (this.props.selectedMonth === nextProps.selectedMonth &&
-      this.props.selectedFlatType === nextProps.selectedFlatType) return;
+      this.props.selectedFlatType === nextProps.selectedFlatType) return
     this.setState({
       table: {
         title: '',
         colNames: [],
         rows: []
       }
-    });
-    this.plotHeatmap(nextProps.selectedMonth, nextProps.selectedFlatType);
+    })
+    this.plotHeatmap(nextProps.selectedMonth, nextProps.selectedFlatType)
   }
 
   render () {
-    const monthList = this.props.monthList;
-    const currentMonthIndex = monthList.indexOf(this.props.selectedMonth);
-    const prevMonth = monthList[Math.max(0, currentMonthIndex - 1)];
-    const nextMonth = monthList[Math.min(monthList.length - 1, currentMonthIndex + 1)];
+    const monthList = this.props.monthList
+    const currentMonthIndex = monthList.indexOf(this.props.selectedMonth)
+    const prevMonth = monthList[Math.max(0, currentMonthIndex - 1)]
+    const nextMonth = monthList[Math.min(monthList.length - 1, currentMonthIndex + 1)]
 
     return (
       <main>
@@ -306,15 +306,16 @@ export default class Maps extends React.Component {
         </div>
         <Table {...this.state.table} />
       </main>
-    );
+    )
   }
 }
 
-Maps.propType = {
+Maps.propTypes = {
   selectedMonth: React.PropTypes.string,
   selectedFlatType: React.PropTypes.string,
-  lastUpdate: React.PropTypes.object,
+  lastUpdate: React.PropTypes.string,
   monthList: React.PropTypes.arrayOf(React.PropTypes.string),
   flatList: React.PropTypes.arrayOf(React.PropTypes.string),
-  updateMonth: React.PropTypes.func
-};
+  updateMonth: React.PropTypes.func,
+  db: React.PropTypes.object
+}
