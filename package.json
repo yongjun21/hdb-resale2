@@ -44,7 +44,8 @@
       "stage-2"
     ],
     "plugins": [
-      "transform-runtime"
+      "transform-runtime",
+      "react-hot-loader/babel"
     ]
   },
   "devDependencies": {
@@ -83,7 +84,7 @@
     "react": "^15.3.0",
     "react-dom": "^15.3.0",
     "react-router": "^2.6.1",
-    "sg-heatmap": "file:../sg-heatmap",
+    "sg-heatmap": "^2.0.0",
     "whatwg-fetch": "^1.0.0"
   },
   "standard": {

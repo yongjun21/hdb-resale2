@@ -117,7 +117,7 @@ db.getAddressBook().then(docs => {
   })
 
   app.use(fallback('index.html', { root }))
-})
+}).catch(console.error)
 
 app.use(compression())
 app.use(bodyParser.json())
