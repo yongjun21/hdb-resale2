@@ -70,6 +70,8 @@ export default class {
       month: String,
       dataPoints: {}
     }))
+
+    this.start = Date.now()
   }
 
   getMeta () {

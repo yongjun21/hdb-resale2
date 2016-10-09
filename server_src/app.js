@@ -26,10 +26,10 @@ db.getAddressBook().then(docs => {
       heatmapKeys.add(k)
     })
   })
-  const regionSubset = regionData.filter(data => heatmapKeys.has(data.key))
-  const planningAreaSubset = planningAreaData.filter(data => heatmapKeys.has(data.key))
+  const regionSubset = regionData.filter(data => heatmapKeys.has(data.id))
+  const planningAreaSubset = planningAreaData.filter(data => heatmapKeys.has(data.id))
   const subzoneSubset = subzoneData.filter(data => planningAreaSubset.findIndex(
-    area => area.meta.Planning_Area_Code === data.meta.Planning_Area_Code
+    area => area.properties.Planning_Area_Code === data.properties.Planning_Area_Code
   ) >= 0)
 
   function refreshAddressCache () {
@@ -117,7 +117,7 @@ db.getAddressBook().then(docs => {
   })
 
   app.use(fallback('index.html', { root }))
-})
+}).catch(console.error)
 
 app.use(compression())
 app.use(bodyParser.json())

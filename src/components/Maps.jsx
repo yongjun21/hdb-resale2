@@ -295,7 +295,7 @@ export default class Maps extends React.Component {
           Property Hotspots in {getMonthYear(this.props.selectedMonth)}
         </h1>
         <div className='chart-container'>
-          <div id='map' ref='map'></div>
+          <div id='map' ref='map' />
           <Loader hidden={!this.state.isLoading} />
           <IconButton id='reset-map' icon='fa-crosshairs'
             handleClick={this.resetMap} />

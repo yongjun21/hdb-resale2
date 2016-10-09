@@ -644,6 +644,12 @@ main {
   top: 31.5vh;
   right: 0;
 }
+.infowindow {
+  pointer-events: none;
+}
+.infowindow > div:last-child {
+  display: none;
+}
 
 .footer {
   background: #a9a9a9;

@@ -3,7 +3,7 @@ import _ from 'lodash'
 import InitDB from '../util/InitDB.js'
 import {fetchData, geocode} from '../util/fetchExtRes.js'
 import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
-import {register_MEAN, insideByKey} from 'sg-heatmap/dist/helpers'
+import {register_MEAN, insideByKey} from 'sg-heatmap/dist/helpers' // eslint-disable-line
 
 const db = new InitDB()
 const choropleth = new SgHeatmap()
@@ -28,7 +28,7 @@ export function populateHeatMap (addressBook, filtered) {
       if (address) {
         if (!address.flag) {
           const heatmapKeys = new Set()
-          choropleth.bin([address.lat, address.lng])
+          choropleth.bin([address.lng, address.lat])
             .forEach(match => heatmapKeys
               .add(match.meta.Subzone_Code)
               .add(match.meta.Planning_Area_Code)

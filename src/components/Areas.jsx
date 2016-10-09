@@ -59,7 +59,7 @@ export default class Areas extends React.Component {
       }
     })
     .catch(() => {
-      this.choropleth.mapData.setMap(null)
+      this.choropleth.renderer.setMap(null)
       this.setState({
         isLoading: true
       })
@@ -122,7 +122,7 @@ export default class Areas extends React.Component {
     const stat = this.choropleth.getStat('latest')
     const colorScale = YlOrRd([stat.min, stat.max], 0.7)
     this.choropleth.render('latest', colorScale)
-    this.choropleth.mapData.setMap(this.map)
+    this.choropleth.renderer.setMap(this.map)
 
     this.setState({
       isLoading: false
@@ -189,7 +189,7 @@ export default class Areas extends React.Component {
           return
         }
 
-        const title = capitalizeFirstLetters(feature.getProperty('meta').Subzone_Name) +
+        const title = capitalizeFirstLetters(feature.getProperty('Subzone_Name')) +
           ' has ' + records.length + ' transaction' + (records.length > 1 ? 's' : '') +
           ' <span class="nowrap">in ' + getMonthYear(month) + '</span>'
         const colNames = [
@@ -280,6 +280,19 @@ export default class Areas extends React.Component {
             this.listAllTransactions(event.feature,
               this.props.selectedMonth, this.props.selectedFlatType)
           })
+        const infowindow = new google.maps.InfoWindow({disableAutoPan: true})
+        infowindow.addListener('domready', () => {
+          document.querySelector('.gm-style-iw').parentNode.classList.add('infowindow')
+        })
+        this.choropleth.renderer.addListener('mouseover', event => {
+          infowindow.setContent(event.feature.getProperty('Subzone_Name'))
+          const featureCenter = event.feature.getProperty('Address')
+          infowindow.setPosition({lat: featureCenter[1], lng: featureCenter[0]})
+          infowindow.open(this.map)
+        })
+        this.choropleth.renderer.addListener('mouseout', event => {
+          infowindow.close()
+        })
         this.plotChoropleth(this.props.selectedMonth, this.props.selectedFlatType)
         window.onresize = () => {
           this.resetMap()
@@ -315,7 +328,7 @@ export default class Areas extends React.Component {
           Property Hotspots in {getMonthYear(this.props.selectedMonth)}
         </h1>
         <div className='chart-container'>
-          <div id='map' ref='map'></div>
+          <div id='map' ref='map' />
           <Loader hidden={!this.state.isLoading} />
           <IconButton id='reset-map' icon='fa-crosshairs'
             handleClick={this.resetMap} />
