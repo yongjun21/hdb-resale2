@@ -102,8 +102,8 @@ export default class Maps extends React.Component {
   }
 
   resetMap () {
-    this.map.setCenter(this.googleMapsSettings.center)
-    this.map.setZoom(this.googleMapsSettings.zoom)
+    this.map.setCenter(this.mapSettings.center)
+    this.map.setZoom(this.mapSettings.zoom)
   }
 
   listAllTransactions (lat, lng, radius, month, flat_type) { //eslint-disable-line
@@ -206,13 +206,13 @@ export default class Maps extends React.Component {
 
   componentDidMount () {
     const initMap = () => {
-      this.googleMapsSettings = {
+      this.mapSettings = {
         center: new google.maps.LatLng(1.352083, 103.819836),
         zoom: 11
       }
       this.map = new google.maps.Map(this.refs.map, {
-        center: this.googleMapsSettings.center,
-        zoom: this.googleMapsSettings.zoom,
+        center: this.mapSettings.center,
+        zoom: this.mapSettings.zoom,
         minZoom: 11,
         maxZoom: 16,
         styles: googleMapsStyles.blueWater
@@ -295,7 +295,7 @@ export default class Maps extends React.Component {
           Property Hotspots in {getMonthYear(this.props.selectedMonth)}
         </h1>
         <div className='chart-container'>
-          <div id='map' ref='map'></div>
+          <div id='map' ref='map' />
           <Loader hidden={!this.state.isLoading} />
           <IconButton id='reset-map' icon='fa-crosshairs'
             handleClick={this.resetMap} />

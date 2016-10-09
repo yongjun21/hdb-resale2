@@ -1,13 +1,15 @@
+/* global L */
 import React from 'react'
 import sortBy from 'lodash/sortBy'
 import SgHeatmap from 'sg-heatmap'
+import supportLeaflet from 'sg-heatmap/dist/plugins/leaflet'
 import {insideByKey, register_LATEST} from 'sg-heatmap/dist/helpers' // eslint-disable-line
 import {YlOrRd} from 'sg-heatmap/dist/helpers/color'
 
 import Table from './Table'
 import IconButton from './IconButton'
 import Loader from './Loader'
-import { capitalizeFirstLetters, getMonthYear, googleMapsStyles } from './helpers.js'
+import { capitalizeFirstLetters, getMonthYear } from './helpers.js'
 
 export default class Areas extends React.Component {
   constructor (props) {
@@ -59,7 +61,7 @@ export default class Areas extends React.Component {
       }
     })
     .catch(() => {
-      this.choropleth.mapData.setMap(null)
+      this.choropleth.renderer.remove()
       this.setState({
         isLoading: true
       })
@@ -122,7 +124,7 @@ export default class Areas extends React.Component {
     const stat = this.choropleth.getStat('latest')
     const colorScale = YlOrRd([stat.min, stat.max], 0.7)
     this.choropleth.render('latest', colorScale)
-    this.choropleth.mapData.setMap(this.map)
+    this.choropleth.renderer.addTo(this.map)
 
     this.setState({
       isLoading: false
@@ -130,8 +132,7 @@ export default class Areas extends React.Component {
   }
 
   resetMap () {
-    this.map.setCenter(this.googleMapsSettings.center)
-    this.map.setZoom(this.googleMapsSettings.zoom)
+    this.map.flyTo(this.mapSettings.center, this.mapSettings.zoom)
   }
 
   listAllTransactions (feature, month, flat_type) { //eslint-disable-line
@@ -142,7 +143,7 @@ export default class Areas extends React.Component {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({key: feature.getId()})
+      body: JSON.stringify({key: feature.id})
     }).then(res => res.json()).then(json => {
       if (!json.length) {
         this.setState({
@@ -189,7 +190,7 @@ export default class Areas extends React.Component {
           return
         }
 
-        const title = capitalizeFirstLetters(feature.getProperty('meta').Subzone_Name) +
+        const title = capitalizeFirstLetters(feature.properties.Subzone_Name) +
           ' has ' + records.length + ' transaction' + (records.length > 1 ? 's' : '') +
           ' <span class="nowrap">in ' + getMonthYear(month) + '</span>'
         const colNames = [
@@ -219,11 +220,11 @@ export default class Areas extends React.Component {
         this.setState({
           table: {title, colNames, rows}
         })
-        this.map.setOptions({scrollwheel: false})
+        this.map.scrollWheelZoom.disable()
         const scrollToTopListener = (e) => {
           if (window.scrollY === 0) {
             window.removeEventListener('scroll', scrollToTopListener)
-            this.map.setOptions({scrollwheel: true})
+            this.map.scrollWheelZoom.enable()
           }
         }
         window.addEventListener('scroll', scrollToTopListener)
@@ -232,62 +233,51 @@ export default class Areas extends React.Component {
   }
 
   componentDidMount () {
-    const initMap = () => {
-      this.googleMapsSettings = {
-        center: new google.maps.LatLng(1.352083, 103.819836),
-        zoom: 11
-      }
-      this.map = new google.maps.Map(this.refs.map, {
-        center: this.googleMapsSettings.center,
-        zoom: this.googleMapsSettings.zoom,
-        minZoom: 11,
-        maxZoom: 16,
-        styles: googleMapsStyles.blueWater
-      })
-      let panLimits
-      google.maps.event.addListenerOnce(this.map, 'bounds_changed', () => {
-        const bounds = this.map.getBounds()
-        const sw = bounds.getSouthWest()
-        const ne = bounds.getNorthEast()
-        panLimits = new google.maps.LatLngBounds({
-          lat: sw.lat() * 0.75 + ne.lat() * 0.25,
-          lng: sw.lng() * 0.75 + ne.lng() * 0.25
-        }, {
-          lat: sw.lat() * 0.25 + ne.lat() * 0.75,
-          lng: sw.lng() * 0.25 + ne.lng() * 0.75
-        })
-      })
-      let lastCenter = this.map.getCenter()
-      this.map.addListener('center_changed', () => {
-        const newCenter = this.map.getCenter()
-        if (panLimits.contains(newCenter)) lastCenter = newCenter
-        else this.map.setCenter(lastCenter)
-      })
-
-      this.getChoroplethTemplate().then(template => {
-        this.choropleth = new SgHeatmap(template)
-        insideByKey(this.choropleth)
-        register_LATEST(this.choropleth)
-        this.choropleth
-          .initializeRenderer({
-            strokeWeight: 1,
-            strokeColor: 'black',
-            strokeOpacity: 1,
-            fillColor: 'white',
-            fillOpacity: 0.7
-          })
-          .addListener('click', event => {
-            this.listAllTransactions(event.feature,
-              this.props.selectedMonth, this.props.selectedFlatType)
-          })
-        this.plotChoropleth(this.props.selectedMonth, this.props.selectedFlatType)
-        window.onresize = () => {
-          this.resetMap()
-        }
-      })
+    const SINGAPORE = [[1.16, 103.582], [1.48073, 104.1647]]
+    this.mapSettings = {
+      center: [1.352083, 103.819836],
+      zoom: 12
     }
-    if (window.googleMapsLoaded) initMap()
-    else window.googleOnLoadCallback = initMap
+    this.map = L.map(this.refs.map, {
+      center: this.mapSettings.center,
+      zoom: this.mapSettings.zoom,
+      minZoom: 12,
+      maxZoom: 17,
+      maxBounds: SINGAPORE,
+      maxBoundsViscosity: 1.0
+    })
+
+    L.tileLayer('https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png', {
+      detectRetina: true,
+      attribution: 'Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>'
+    }).addTo(this.map)
+
+    this.map.attributionControl
+      .setPrefix('<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;"/>')
+
+    this.getChoroplethTemplate().then(template => {
+      this.choropleth = new SgHeatmap(template)
+      supportLeaflet(this.choropleth)
+      insideByKey(this.choropleth)
+      register_LATEST(this.choropleth)
+      this.choropleth
+        .initializeRenderer({
+          weight: 1,
+          color: 'black',
+          opacity: 1,
+          fillColor: 'white',
+          fillOpacity: 0.7
+        })
+        .bindTooltip(layer => layer.feature.properties.Subzone_Name)
+        .on('click', event => {
+          this.listAllTransactions(event.layer.feature,
+            this.props.selectedMonth, this.props.selectedFlatType)
+        })
+      this.plotChoropleth(this.props.selectedMonth, this.props.selectedFlatType)
+      window.onresize = () => {
+        this.resetMap()
+      }
+    })
   }
 
   componentWillReceiveProps (nextProps) {
@@ -315,7 +305,7 @@ export default class Areas extends React.Component {
           Property Hotspots in {getMonthYear(this.props.selectedMonth)}
         </h1>
         <div className='chart-container'>
-          <div id='map' ref='map'></div>
+          <div id='map' ref='map' />
           <Loader hidden={!this.state.isLoading} />
           <IconButton id='reset-map' icon='fa-crosshairs'
             handleClick={this.resetMap} />

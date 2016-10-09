@@ -592,7 +592,7 @@ main {
 
 .button {
   position: absolute;
-  z-index: 1;
+  z-index: 3;
   width: 7vh;
   height: 7vh;
   min-width: 50px;
@@ -629,7 +629,7 @@ main {
   opacity: 0.8;
 }
 .loading.fa-spinner {
-  z-index: 1;
+  z-index: 2;
 }
 #reset-map {
   bottom: 0;
@@ -643,6 +643,13 @@ main {
 #next-month {
   top: 31.5vh;
   right: 0;
+}
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-left,
+.leaflet-right {
+  z-index: 1;
 }
 
 .footer {
