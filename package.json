@@ -90,7 +90,8 @@
   "standard": {
     "global": [
       "Plotly",
-      "google"
+      "google",
+      "ol"
     ]
   }
 }

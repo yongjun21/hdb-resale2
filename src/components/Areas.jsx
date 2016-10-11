@@ -1,8 +1,7 @@
-/* global L */
 import React from 'react'
 import sortBy from 'lodash/sortBy'
 import SgHeatmap from 'sg-heatmap'
-import supportLeaflet from 'sg-heatmap/dist/plugins/leaflet'
+import supportOpenLayers from 'sg-heatmap/dist/plugins/openlayers'
 import {insideByKey, register_LATEST} from 'sg-heatmap/dist/helpers' // eslint-disable-line
 import {YlOrRd} from 'sg-heatmap/dist/helpers/color'
 
@@ -61,7 +60,7 @@ export default class Areas extends React.Component {
       }
     })
     .catch(() => {
-      this.choropleth.renderer.remove()
+      this.choropleth.renderer.setVisible(false)
       this.setState({
         isLoading: true
       })
@@ -124,15 +123,16 @@ export default class Areas extends React.Component {
     const stat = this.choropleth.getStat('latest')
     const colorScale = YlOrRd([stat.min, stat.max], 0.7)
     this.choropleth.render('latest', colorScale)
-    this.choropleth.renderer.addTo(this.map)
-
+    this.choropleth.renderer.setVisible(true)
     this.setState({
       isLoading: false
     })
   }
 
   resetMap () {
-    this.map.flyTo(this.mapSettings.center, this.mapSettings.zoom)
+    const view = this.map.getView()
+    view.setCenter(this.mapSettings.center)
+    view.setZoom(this.mapSettings.zoom)
   }
 
   listAllTransactions (feature, month, flat_type) { //eslint-disable-line
@@ -143,7 +143,7 @@ export default class Areas extends React.Component {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({key: feature.id})
+      body: JSON.stringify({key: feature.getId()})
     }).then(res => res.json()).then(json => {
       if (!json.length) {
         this.setState({
@@ -190,7 +190,7 @@ export default class Areas extends React.Component {
           return
         }
 
-        const title = capitalizeFirstLetters(feature.properties.Subzone_Name) +
+        const title = capitalizeFirstLetters(feature.getProperties().Subzone_Name) +
           ' has ' + records.length + ' transaction' + (records.length > 1 ? 's' : '') +
           ' <span class="nowrap">in ' + getMonthYear(month) + '</span>'
         const colNames = [
@@ -220,11 +220,11 @@ export default class Areas extends React.Component {
         this.setState({
           table: {title, colNames, rows}
         })
-        this.map.scrollWheelZoom.disable()
+        this.mouseWheelHandler.setActive(false)
         const scrollToTopListener = (e) => {
           if (window.scrollY === 0) {
             window.removeEventListener('scroll', scrollToTopListener)
-            this.map.scrollWheelZoom.enable()
+            this.mouseWheelHandler.setActive(true)
           }
         }
         window.addEventListener('scroll', scrollToTopListener)
@@ -233,46 +233,61 @@ export default class Areas extends React.Component {
   }
 
   componentDidMount () {
-    const SINGAPORE = [[1.16, 103.582], [1.48073, 104.1647]]
+    const SINGAPORE = [
+      ...ol.proj.fromLonLat([103.582, 1.16]),
+      ...ol.proj.fromLonLat([104.1647, 1.48073])
+    ]
     this.mapSettings = {
-      center: [1.352083, 103.819836],
-      zoom: 12
+      center: ol.proj.fromLonLat([103.819836, 1.352083]),
+      zoom: 11
     }
-    this.map = L.map(this.refs.map, {
-      center: this.mapSettings.center,
-      zoom: this.mapSettings.zoom,
-      minZoom: 12,
-      maxZoom: 17,
-      maxBounds: SINGAPORE,
-      maxBoundsViscosity: 1.0
+    this.map = new ol.Map({
+      target: this.refs.map,
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.OSM()
+        })
+      ],
+      interactions: ol.interaction.defaults({mouseWheelZoom: false}),
+      view: new ol.View({
+        center: this.mapSettings.center,
+        zoom: this.mapSettings.zoom,
+        minZoom: 11,
+        maxZoom: 17,
+        extent: SINGAPORE
+      })
     })
-
-    L.tileLayer('https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png', {
-      detectRetina: true,
-      attribution: 'Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>'
-    }).addTo(this.map)
-
-    this.map.attributionControl
-      .setPrefix('<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;"/>')
+    this.mouseWheelHandler = new ol.interaction.MouseWheelZoom()
+    this.map.addInteraction(this.mouseWheelHandler)
 
     this.getChoroplethTemplate().then(template => {
       this.choropleth = new SgHeatmap(template)
-      supportLeaflet(this.choropleth)
+      supportOpenLayers(this.choropleth)
       insideByKey(this.choropleth)
       register_LATEST(this.choropleth)
-      this.choropleth
-        .initializeRenderer({
-          weight: 1,
+      const defaultStyle = new ol.style.Style({
+        stroke: new ol.style.Stroke({
           color: 'black',
-          opacity: 1,
-          fillColor: 'white',
-          fillOpacity: 0.7
+          width: 1
+        }),
+        fill: new ol.style.Fill({
+          color: 'white'
         })
-        .bindTooltip(layer => layer.feature.properties.Subzone_Name)
-        .on('click', event => {
-          this.listAllTransactions(event.layer.feature,
-            this.props.selectedMonth, this.props.selectedFlatType)
-        })
+      })
+      this.choropleth
+        .initializeRenderer(defaultStyle)
+      this.choropleth.renderer.setOpacity(0.7)
+      this.map.addLayer(this.choropleth.renderer)
+      const clickHandler = new ol.interaction.Select({
+        style: this.choropleth.renderer.getStyle(),
+        layers: [this.choropleth.renderer]
+      })
+      clickHandler.on('select', event => {
+        if (!event.selected.length) return
+        this.listAllTransactions(event.selected[0],
+          this.props.selectedMonth, this.props.selectedFlatType)
+      })
+      this.map.addInteraction(clickHandler)
       this.plotChoropleth(this.props.selectedMonth, this.props.selectedFlatType)
       window.onresize = () => {
         this.resetMap()
