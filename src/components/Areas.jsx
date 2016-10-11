@@ -190,7 +190,7 @@ export default class Areas extends React.Component {
           return
         }
 
-        const title = capitalizeFirstLetters(feature.getProperties().Subzone_Name) +
+        const title = capitalizeFirstLetters(feature.get('Subzone_Name')) +
           ' has ' + records.length + ' transaction' + (records.length > 1 ? 's' : '') +
           ' <span class="nowrap">in ' + getMonthYear(month) + '</span>'
         const colNames = [
@@ -278,16 +278,12 @@ export default class Areas extends React.Component {
         .initializeRenderer(defaultStyle)
       this.choropleth.renderer.setOpacity(0.7)
       this.map.addLayer(this.choropleth.renderer)
-      const clickHandler = new ol.interaction.Select({
-        style: this.choropleth.renderer.getStyle(),
-        layers: [this.choropleth.renderer]
+      this.map.on('click', event => {
+        this.map.forEachFeatureAtPixel(event.pixel, feature => {
+          this.listAllTransactions(feature,
+            this.props.selectedMonth, this.props.selectedFlatType)
+        })
       })
-      clickHandler.on('select', event => {
-        if (!event.selected.length) return
-        this.listAllTransactions(event.selected[0],
-          this.props.selectedMonth, this.props.selectedFlatType)
-      })
-      this.map.addInteraction(clickHandler)
       this.plotChoropleth(this.props.selectedMonth, this.props.selectedFlatType)
       window.onresize = () => {
         this.resetMap()
