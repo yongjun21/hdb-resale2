@@ -644,12 +644,15 @@ main {
   top: 31.5vh;
   right: 0;
 }
-.leaflet-pane,
-.leaflet-top,
-.leaflet-bottom,
-.leaflet-left,
-.leaflet-right {
-  z-index: 1;
+.tooltip {
+  position: relative;
+  font-size: 8px;
+  font-weight: bold;
+  padding: 0.5em;
+  border-radius: 3px;
+  color: white;
+  background-color: black;
+  pointer-events: none;
 }
 
 .footer {

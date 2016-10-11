@@ -279,11 +279,29 @@ export default class Areas extends React.Component {
       this.choropleth.renderer.setOpacity(0.7)
       this.map.addLayer(this.choropleth.renderer)
       this.map.on('click', event => {
-        this.map.forEachFeatureAtPixel(event.pixel, feature => {
+        const feature = this.map.forEachFeatureAtPixel(event.pixel, feature => feature)
+        if (feature) {
           this.listAllTransactions(feature,
             this.props.selectedMonth, this.props.selectedFlatType)
-        })
+        }
       })
+
+      const overlay = new ol.Overlay({
+        element: this.refs.tooltip,
+        positioning: 'center-center',
+        stopEvent: false
+      })
+      this.map.addOverlay(overlay)
+      this.map.on('pointermove', event => {
+        const feature = this.map.forEachFeatureAtPixel(event.pixel, feature => feature)
+        if (feature) {
+          this.refs.tooltip.innerHTML = feature.get('Subzone_Name')
+          overlay.setPosition(ol.proj.fromLonLat(feature.get('Address')))
+        } else {
+          overlay.setPosition()
+        }
+      })
+
       this.plotChoropleth(this.props.selectedMonth, this.props.selectedFlatType)
       window.onresize = () => {
         this.resetMap()
@@ -316,7 +334,9 @@ export default class Areas extends React.Component {
           Property Hotspots in {getMonthYear(this.props.selectedMonth)}
         </h1>
         <div className='chart-container'>
-          <div id='map' ref='map' />
+          <div id='map' ref='map'>
+            <div className='tooltip' ref='tooltip' />
+          </div>
           <Loader hidden={!this.state.isLoading} />
           <IconButton id='reset-map' icon='fa-crosshairs'
             handleClick={this.resetMap} />
