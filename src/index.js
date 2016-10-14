@@ -21,7 +21,7 @@ ReactDOM.render((
       <Route path='areas(/:month)' components={{main: Areas, selector: AreaSelector}} />
       <Route path='about' components={{main: About}} />
       <IndexRedirect to='/areas' />
-      <Redirect from='*' to='/charts' />
+      <Redirect from='*' to='/areas' />
     </Route>
   </Router>
 ), document.getElementById('root'))

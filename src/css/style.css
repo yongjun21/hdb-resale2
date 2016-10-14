@@ -651,6 +651,9 @@ main {
 .leaflet-right {
   z-index: 1;
 }
+.leaflet-overlay-pane path {
+  transition: fill 500ms
+}
 
 .footer {
   background: #a9a9a9;
