@@ -121,7 +121,9 @@ export default class Charts extends React.Component {
         const datasetsReserve = []
         sortBy(results, result => result.flat_type).reverse().forEach(result => {
           if (result.time_series.month.length > 0) {
-            if (chartType === 'Smoothed' && result.time_series.month.length > 100) {
+            if (chartType === 'Smoothed' &&
+                result.flat_type !== 'MULTI-GENERATION' &&
+                result.time_series.month.length > 100) {
               const fillx = []
               const filly = []
               for (let i = 0; i < result.time_series.month.length; i++) {

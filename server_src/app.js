@@ -6,9 +6,9 @@ import path from 'path'
 import InitDB from './util/InitDB.js'
 import {toSVY, eucliDist2} from './util/geometry'
 
-import regionData from '../data/region.json'
-import planningAreaData from '../data/planning_area.json'
-import subzoneData from '../data/subzone.json'
+import regionData from 'sg-heatmap/data/region_2014.json'
+import planningAreaData from 'sg-heatmap/data/planning_area_2014.json'
+import subzoneData from 'sg-heatmap/data/subzone_2014.json'
 
 const app = express()
 const root = path.join(__dirname, '../dist')
