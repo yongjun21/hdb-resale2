@@ -592,7 +592,7 @@ main {
 
 .button {
   position: absolute;
-  z-index: 1;
+  z-index: 3;
   width: 7vh;
   height: 7vh;
   min-width: 50px;
@@ -629,7 +629,7 @@ main {
   opacity: 0.8;
 }
 .loading.fa-spinner {
-  z-index: 1;
+  z-index: 2;
 }
 #reset-map {
   bottom: 0;
@@ -644,11 +644,15 @@ main {
   top: 31.5vh;
   right: 0;
 }
-.infowindow {
-  pointer-events: none;
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-left,
+.leaflet-right {
+  z-index: 1;
 }
-.infowindow > div:last-child {
-  display: none;
+.leaflet-overlay-pane path {
+  transition: fill 500ms
 }
 
 .footer {

@@ -12,10 +12,11 @@ export function processData ({data, meta}) {
   console.log('Processing time-series data')
   const processed = []
   const {townList, flatList} = meta
-  townList.forEach(function (town) {
+  townList.concat(['ALL']).forEach(function (town) {
     flatList.forEach(function (flat) {
       const byMonth = _(data)
-        .filter(record => record.town.trim() === town && record.flat_type.trim() === flat)
+        .filter(record => town === 'ALL' || record.town.trim() === town)
+        .filter(record => record.flat_type.trim() === flat)
         .groupBy(record => record.month)
         .value()
       const month = []

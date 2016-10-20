@@ -5,6 +5,7 @@ import Terms from './Terms'
 import { withRouter } from 'react-router'
 import { serialize } from './helpers'
 import 'whatwg-fetch'
+import find from 'lodash/find'
 
 class App extends React.Component {
   constructor () {
@@ -55,16 +56,16 @@ class App extends React.Component {
     this.getMeta()
     .then(meta => {
       console.log('meta loaded', meta)
-      const selectedTown = Array.find(meta.townList, t => {
+      const selectedTown = find(meta.townList, t => {
         return serialize(t) === serialize(this.props.params.town)
-      }) || meta.townList[0]
-      const selectedMonth = Array.find(meta.monthList, m => {
+      }) || 'ALL'
+      const selectedMonth = find(meta.monthList, m => {
         return serialize(m) === serialize(this.props.params.month)
       }) || meta.monthList[meta.monthList.length - 1]
-      const selectedChartType = Array.find(this.state.chartType, c => {
+      const selectedChartType = find(this.state.chartType, c => {
         return serialize(c) === serialize(this.props.location.query.type)
       }) || 'Smoothed'
-      const selectedFlatType = Array.find(this.state.flatType, f => {
+      const selectedFlatType = find(this.state.flatType, f => {
         return serialize(f) === serialize(this.props.location.query.flat)
       }) || 'ALL'
       this.setState({
@@ -73,7 +74,7 @@ class App extends React.Component {
         selectedChartType,
         selectedFlatType,
         lastUpdate: meta.lastUpdate,
-        townList: meta.townList,
+        townList: ['ALL', ...meta.townList],
         flatList: meta.flatList,
         monthList: meta.monthList
       })
