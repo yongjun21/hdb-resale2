@@ -61,7 +61,7 @@ export default class Areas extends React.Component {
       }
     })
     .catch(() => {
-      this.choropleth.renderer.remove()
+      // this.choropleth.renderer.remove()
       this.setState({
         isLoading: true
       })
@@ -124,7 +124,7 @@ export default class Areas extends React.Component {
     const stat = this.choropleth.getStat('latest')
     const colorScale = YlOrRd([stat.min, stat.max], 0.7)
     this.choropleth.render('latest', colorScale)
-    this.choropleth.renderer.addTo(this.map)
+    // this.choropleth.renderer.addTo(this.map)
 
     this.setState({
       isLoading: false
@@ -273,6 +273,7 @@ export default class Areas extends React.Component {
           this.listAllTransactions(event.layer.feature,
             this.props.selectedMonth, this.props.selectedFlatType)
         })
+        .addTo(this.map)
       this.plotChoropleth(this.props.selectedMonth, this.props.selectedFlatType)
       window.onresize = () => {
         this.resetMap()

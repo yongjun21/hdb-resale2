@@ -605,6 +605,7 @@ main {
 }
 .loader-overlay {
   position: absolute;
+  z-index: 9;
   top: 0;
   bottom: 0;
   left: 0;
@@ -615,7 +616,6 @@ main {
 }
 .loading {
   position: absolute;
-  z-index: -1;
   left: 50%;
   top: 50%;
   width: 150px;
@@ -627,9 +627,6 @@ main {
   margin-top: -75px;
   color: #2f4f4f;
   opacity: 0.8;
-}
-.loading.fa-spinner {
-  z-index: 2;
 }
 #reset-map {
   bottom: 0;
