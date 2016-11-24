@@ -13,6 +13,14 @@ import './css/style.css'
 
 window.PouchDB = require('pouchdb')
 
+if (process.env.NODE_ENV === 'production') {
+  window.ga('send', 'pageview')
+  browserHistory.listen(location => {
+    window.ga('set', 'page', location.pathname + location.search)
+    window.ga('send', 'pageview')
+  })
+}
+
 ReactDOM.render((
   <Router history={browserHistory}>
     <Route path='/' component={App}>
