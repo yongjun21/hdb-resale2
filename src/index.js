@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Router, Route, Redirect, IndexRedirect, browserHistory } from 'react-router'
+import { Router, Route, IndexRoute, Redirect, browserHistory } from 'react-router'
 
 import App from './components/App'
 import Charts from './components/Charts'
@@ -14,7 +14,7 @@ import './css/style.css'
 window.PouchDB = require('pouchdb')
 
 if (process.env.NODE_ENV === 'production') {
-  window.ga('send', 'pageview')
+  console.log('GA activated')
   browserHistory.listen(location => {
     window.ga('set', 'page', location.pathname + location.search)
     window.ga('send', 'pageview')
@@ -24,11 +24,11 @@ if (process.env.NODE_ENV === 'production') {
 ReactDOM.render((
   <Router history={browserHistory}>
     <Route path='/' component={App}>
+      <IndexRoute components={{main: Areas, selector: AreaSelector}} />
       <Route path='charts(/:town)' components={{main: Charts, selector: ChartSelector}} />
       <Route path='maps(/:month)' components={{main: Maps, selector: MapSelector}} />
       <Route path='areas(/:month)' components={{main: Areas, selector: AreaSelector}} />
       <Route path='about' components={{main: About}} />
-      <IndexRedirect to='/areas' />
       <Redirect from='*' to='/areas' />
     </Route>
   </Router>
