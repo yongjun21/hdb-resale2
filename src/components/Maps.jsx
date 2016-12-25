@@ -62,8 +62,7 @@ export default class Maps extends React.Component {
   getData (month) {
     console.log('retrieving data from MongoDB', month)
     const url = window.location.protocol + '//' + window.location.host + '/heatmap?month=' + month
-    const headers = { Accept: 'application/json' }
-    return window.fetch(url, headers).then(res => res.json()).then(results => {
+    return window.fetch(url).then(res => res.json()).then(results => {
       return results.reduce((dataPoints, result) => {
         result.dataPoints.forEach(pt => {
           pt[2] = Math.pow(pt[2], 1.5)
@@ -80,7 +79,7 @@ export default class Maps extends React.Component {
     }
 
     let dataPoints = []
-    if (this.props.selectedFlatType !== 'ALL') {
+    if (this.props.selectedFlatType !== 'HDB') {
       dataPoints = dataObj.dataPoints[this.props.selectedFlatType]
     } else {
       this.props.flatList.forEach(flatType => {
@@ -107,6 +106,7 @@ export default class Maps extends React.Component {
   }
 
   listAllTransactions (lat, lng, radius, month, flat_type) { //eslint-disable-line
+    if (flat_type.match(/^Private/)) return // FIXME
     const url = window.location.protocol + '//' + window.location.host + '/nearby'
     window.fetch(url, {
       method: 'POST',
@@ -135,10 +135,9 @@ export default class Maps extends React.Component {
       const resource = month < '2012-03' ? resID[0] : resID[1]
       Promise.all(json.map(street_name => { //eslint-disable-line
         const filters = {street_name, month}
-        if (flat_type !== 'ALL') Object.assign(filters, {flat_type}) // eslint-disable-line
-        const dataURL = 'https://data.gov.sg/api/action/datastore_search?resource_id=' +
-          resource + '&filters=' + JSON.stringify(filters)
-        return window.fetch(dataURL, { Accept: 'application/json' })
+        if (flat_type !== 'HDB') Object.assign(filters, {flat_type}) // eslint-disable-line
+        const dataURL = `https://data.gov.sg/api/action/datastore_search?resource_id=${resource}&filters=${JSON.stringify(filters)}&limit=5000`
+        return window.fetch(dataURL)
           .then(data => data.json())
       }))
       .then(results => results.reduce((records, res) => {

@@ -13,7 +13,7 @@ class App extends React.Component {
     this.state = {
       db: new window.PouchDB('hdbresale'),
       chartType: ['Average', 'Min, Max & Median', 'Smoothed'],
-      flatType: ['ALL', '3 ROOM', '4 ROOM', '5 ROOM'],
+      flatType: ['HDB', '3 ROOM', '4 ROOM', '5 ROOM', 'Private Landed', 'Private Non-landed'],
       hideTerms: true
     }
 
@@ -58,7 +58,7 @@ class App extends React.Component {
       console.log('meta loaded', meta)
       const selectedTown = find(meta.townList, t => {
         return serialize(t) === serialize(this.props.params.town)
-      }) || 'ALL'
+      }) || 'HDB'
       const selectedMonth = find(meta.monthList, m => {
         return serialize(m) === serialize(this.props.params.month)
       }) || meta.monthList[meta.monthList.length - 1]
@@ -67,14 +67,14 @@ class App extends React.Component {
       }) || 'Smoothed'
       const selectedFlatType = find(this.state.flatType, f => {
         return serialize(f) === serialize(this.props.location.query.flat)
-      }) || 'ALL'
+      }) || 'HDB'
       this.setState({
         selectedTown,
         selectedMonth,
         selectedChartType,
         selectedFlatType,
         lastUpdate: meta.lastUpdate,
-        townList: ['ALL', ...meta.townList],
+        townList: ['ALL', ...meta.townList, 'Private CCR', 'Private RCR', 'Private OCR'],
         flatList: meta.flatList,
         monthList: meta.monthList
       })

@@ -1,4 +1,5 @@
 import fetch from 'node-fetch'
+import _ from 'lodash'
 
 export function fetchData () {
   const batchSize = 10000
@@ -55,4 +56,35 @@ export function geocode (block, street, town) {
         })
     )
   })
+}
+
+export function fetchURAdata () {
+  const tokenUrl = 'https://www.ura.gov.sg/uraDataService/insertNewToken.action'
+  const headers = {
+    Accept: 'application/json',
+    AccessKey: process.env.URASPACE_ACCESS_KEY
+  }
+
+  return fetch(tokenUrl, {headers})
+    .then(res => res.json())
+    .then(json => {
+      if (json.Status !== 'Success') throw new Error('fetch api token fail: ' + json.Message)
+      return json.Result
+    })
+    .then(token => {
+      headers.Token = token
+      const url = 'https://www.ura.gov.sg/uraDataService/invokeUraDS?service=PMI_Resi_Transaction&batch='
+      const apiCalls = _.range(4).map(i => {
+        return fetch(url + (i + 1), {headers})
+          .then(res => res.json())
+          .then(json => {
+            if (json.Status !== 'Success') throw new Error('fetch private property transactions fail: ' + json.Message)
+            return json.Result
+          })
+      })
+      return Promise.all(apiCalls)
+    })
+    .then(results => {
+      return _.flatten(results)
+    })
 }

@@ -114,8 +114,7 @@ export default class Charts extends React.Component {
   getData (town) {
     console.log('retrieving data from MongoDB')
     const url = window.location.protocol + '//' + window.location.host + '/time_series?town=' + town
-    const headers = {Accept: 'application/json'}
-    return window.fetch(url, headers).then(res => res.json()).then(results => {
+    return window.fetch(url).then(res => res.json()).then(results => {
       function prepareData (chartType) {
         const datasets = []
         const datasetsReserve = []
@@ -214,6 +213,7 @@ export default class Charts extends React.Component {
   }
 
   listAllTransactions (town, flat_type, date) { // eslint-disable-line
+    if (town.match(/^Private/)) return // FIXME
     const resID = [
       '8c00bf08-9124-479e-aeca-7cc411d884c4',
       '83b2fc37-ce8c-4df4-968b-370fd818138b'
@@ -221,10 +221,10 @@ export default class Charts extends React.Component {
     const month = date.slice(0, 7)
     const resource = month < '2012-03' ? resID[0] : resID[1]
     const filters = {town, flat_type, month}
-    const dataURL = 'https://data.gov.sg/api/action/datastore_search?resource_id=' +
-      resource + '&filters=' + JSON.stringify(filters)
+    if (town === 'ALL') delete filters.town
+    const dataURL = `https://data.gov.sg/api/action/datastore_search?resource_id=${resource}&filters=${JSON.stringify(filters)}&limit=5000`
 
-    window.fetch(dataURL, { Accept: 'application/json' })
+    window.fetch(dataURL)
       .then(data => data.json())
       .then(json => {
         console.log(json)

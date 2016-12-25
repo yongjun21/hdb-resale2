@@ -28,12 +28,12 @@ export function populateHeatMap (addressBook, filtered) {
       if (address) {
         if (!address.flag) {
           const heatmapKeys = new Set()
-          choropleth.bin([address.lng, address.lat])
-            .forEach(match => heatmapKeys
+          choropleth.bin([address.lng, address.lat]).forEach(match => {
+            heatmapKeys
               .add(match.properties.Subzone_Code)
               .add(match.properties.Planning_Area_Code)
               .add(match.properties.Region_Code)
-            )
+          })
           address.heatmapKeys = [...heatmapKeys]
           addressBook.push(address)
           console.log('New address:', address)

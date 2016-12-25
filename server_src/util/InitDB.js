@@ -71,6 +71,30 @@ export default class {
       dataPoints: {}
     }))
 
+    this.private_project = mongoose.model('private_project', new mongoose.Schema({
+      projectId: Number,
+      project: String,
+      street: String,
+      marketSegment: String,
+      y: Number,
+      x: Number,
+      heatmapKeys: [String]
+    }))
+
+    this.private_transaction = mongoose.model('private_transaction', new mongoose.Schema({
+      project: Number,
+      month: String,
+      propertyType: String,
+      typeOfSale: Number,
+      typeOfArea: String,
+      area: Number,
+      price: Number,
+      noOfUnits: Number,
+      tenure: String,
+      floorRange: String,
+      district: String
+    }))
+
     this.start = Date.now()
   }
 
@@ -92,6 +116,13 @@ export default class {
     return this.Address.find().exec((err) => {
       if (err) throw err
       console.log('Address book loaded')
+    })
+  }
+
+  getProjectList () {
+    return this.private_project.find().exec((err) => {
+      if (err) throw err
+      console.log('Project list loaded')
     })
   }
 
