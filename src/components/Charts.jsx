@@ -231,62 +231,113 @@ export default class Charts extends React.Component {
   }
 
   listAllTransactions (town, flat_type, date) { // eslint-disable-line
-    if (town.match(/^Private/)) return // FIXME
-    const resID = [
-      '8c00bf08-9124-479e-aeca-7cc411d884c4',
-      '83b2fc37-ce8c-4df4-968b-370fd818138b'
-    ]
     const month = date.slice(0, 7)
-    const resource = month < '2012-03' ? resID[0] : resID[1]
-    const filters = {town, flat_type, month}
-    if (town === 'ALL') delete filters.town
-    const dataURL = `https://data.gov.sg/api/action/datastore_search?resource_id=${resource}&filters=${JSON.stringify(filters)}&limit=5000`
+    if (town.match(/^Private/)) {
+      const dataURL = `${window.location.protocol}//${window.location.host}/private_transaction?town=${town}&flat_type=${flat_type}&month=${month}`
 
-    window.fetch(dataURL)
-      .then(data => data.json())
-      .then(json => {
-        console.log(json)
-        const title = town === 'ALL' ? (
-          'Transaction Records for <span class="nowrap">' +
-          capitalizeFirstLetters(flat_type) + ' HDB Flats in ' +
-          getMonthYear(date) + '</span>'
-        ) : (
-          'Transaction Records for ' + capitalizeFirstLetters(flat_type) +
-          ' Flats <span class="nowrap">in ' + capitalizeFirstLetters(town) +
-          ' in ' + getMonthYear(date) + '</span>'
-        )
+      window.fetch(dataURL)
+        .then(data => data.json())
+        .then(json => {
+          console.log(json)
+          const {projects, transactions} = json
+          const title = 'Transaction Records for <span class="nowrap">' + town +
+            ' Properties</span> <span class="nowrap">in ' + flat_type + ' in ' +
+            getMonthYear(date) + '</span>'
 
-        const colNames = [
-          '#',
-          'Block',
-          'Street Name',
-          'Storey Range',
-          'Lease Commence',
-          'Floor Area (sqm)',
-          'Resale Price (SGD)'
-        ]
-        if (town === 'ALL') colNames.splice(1, 0, 'Town')
-
-        const transactions = sortBy(json.result.records,
-          record => +record.resale_price).reverse()
-        const rows = transactions.map((transaction, index) => {
-          const row = [
-            index + 1,
-            transaction.block.trim(),
-            capitalizeFirstLetters(transaction.street_name.trim()),
-            transaction.storey_range.trim().toLowerCase(),
-            transaction.lease_commence_date,
-            transaction.floor_area_sqm,
-            (+transaction.resale_price).toLocaleString()
+          const colNames = [
+            '#',
+            'District',
+            'Project Name',
+            'Street Name',
+            'Property Type',
+            'Storey Range',
+            'Sale Type',
+            'Tenure',
+            'Area (sqm)',
+            'No. of units',
+            'Price (SGD)'
           ]
-          if (town === 'ALL') row.splice(1, 0, transaction.town)
-          return row
-        })
 
-        this.setState({
-          table: {title, colNames, rows}
+          const typeOfSale = ['New Sale', 'Sub Sale', 'Resale']
+
+          const sorted = sortBy(transactions, record =>
+            (record.nettPrice || record.price) / record.noOfUnits).reverse()
+          const rows = sorted.map((t, i) => ([
+            i + 1,
+            t.district,
+            projects[t.project].project,
+            capitalizeFirstLetters(projects[t.project].street),
+            t.propertyType
+              .replace('Strata Semidetached', 'Strata Semi-D')
+              .replace('Executive Condominium', 'EC'),
+            t.floorRange,
+            typeOfSale[t.typeOfSale],
+            t.tenure.replace('lease commencing ', ''),
+            t.area,
+            t.noOfUnits,
+            (t.nettPrice || t.price).toLocaleString()
+          ]))
+
+          this.setState({
+            table: {title, colNames, rows}
+          })
         })
-      })
+    } else {
+      const resID = [
+        '8c00bf08-9124-479e-aeca-7cc411d884c4',
+        '83b2fc37-ce8c-4df4-968b-370fd818138b'
+      ]
+      const resource = month < '2012-03' ? resID[0] : resID[1]
+      const filters = {town, flat_type, month}
+      if (town === 'ALL') delete filters.town
+      const dataURL = `https://data.gov.sg/api/action/datastore_search?resource_id=${resource}&filters=${JSON.stringify(filters)}&limit=5000`
+
+      window.fetch(dataURL)
+        .then(data => data.json())
+        .then(json => {
+          console.log(json)
+          const title = town === 'ALL' ? (
+            'Transaction Records for <span class="nowrap">' +
+            capitalizeFirstLetters(flat_type) + ' HDB Flats in ' +
+            getMonthYear(date) + '</span>'
+          ) : (
+            'Transaction Records for ' + capitalizeFirstLetters(flat_type) +
+            ' Flats <span class="nowrap">in ' + capitalizeFirstLetters(town) +
+            ' in ' + getMonthYear(date) + '</span>'
+          )
+
+          const colNames = [
+            '#',
+            'Block',
+            'Street Name',
+            'Storey Range',
+            'Lease Commence',
+            'Floor Area (sqm)',
+            'Resale Price (SGD)'
+          ]
+          if (town === 'ALL') colNames.splice(1, 0, 'Town')
+
+          const transactions = sortBy(json.result.records,
+            record => +record.resale_price).reverse()
+          const rows = transactions.map((transaction, index) => {
+            const row = [
+              index + 1,
+              transaction.block.trim(),
+              capitalizeFirstLetters(transaction.street_name.trim()),
+              transaction.storey_range.trim().toLowerCase(),
+              transaction.lease_commence_date,
+              transaction.floor_area_sqm,
+              (+transaction.resale_price).toLocaleString()
+            ]
+            if (town === 'ALL') row.splice(1, 0, transaction.town)
+            return row
+          })
+
+          this.setState({
+            table: {title, colNames, rows}
+          })
+        })
+    }
   }
 
   componentDidMount () {

@@ -4,6 +4,7 @@ import bodyParser from 'body-parser'
 import compression from 'compression'
 import path from 'path'
 import unique from 'lodash/uniq'
+import keyBy from 'lodash/keyBy'
 import InitDB from './util/InitDB.js'
 import {toSVY, eucliDist2} from './util/geometry'
 
@@ -127,7 +128,7 @@ Promise.all([
     else res.sendStatus(404)
   })
 
-  app.get('/private_transactions', function (req, res) {
+  app.get('/private_transaction', function (req, res) {
     const query = {}
     if (req.query.month) query.month = req.query.month
     if (req.query.town) query.propertyType = {$in: propertyType[req.query.town]}
@@ -144,7 +145,7 @@ Promise.all([
             const filteredTransactions = transactions.filter(t =>
               filteredProjects.findIndex(p => p.projectId === t.project) > -1)
             res.json({
-              projects: filteredProjects,
+              projects: keyBy(filteredProjects, 'projectId'),
               transactions: filteredTransactions
             })
           }
@@ -178,9 +179,10 @@ Promise.all([
     db.private_transaction.find(query).exec((err, docs) => {
       if (err) console.error(err.stack)
       else {
+        const filteredProjects = nearbyProjects.filter(p =>
+          docs.findIndex(t => t.project === p.projectId) > -1)
         res.json({
-          projects: nearbyProjects
-            .filter(p => docs.findIndex(t => t.project === p.projectId) > -1),
+          projects: keyBy(filteredProjects, 'projectId'),
           transactions: docs
         })
       }
@@ -209,9 +211,10 @@ Promise.all([
     db.private_transaction.find(query).exec((err, docs) => {
       if (err) console.error(err.stack)
       else {
+        const filteredProjects = nearbyProjects.filter(p =>
+          docs.findIndex(t => t.project === p.projectId) > -1)
         res.json({
-          projects: nearbyProjects
-            .filter(p => docs.findIndex(t => t.project === p.projectId) > -1),
+          projects: keyBy(filteredProjects, 'projectId'),
           transactions: docs
         })
       }

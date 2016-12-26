@@ -59,6 +59,7 @@ export function geocode (block, street, town) {
 }
 
 export function fetchURAdata () {
+  console.log('fetching token')
   const tokenUrl = 'https://www.ura.gov.sg/uraDataService/insertNewToken.action'
   const headers = {
     Accept: 'application/json',
@@ -69,6 +70,7 @@ export function fetchURAdata () {
     .then(res => res.json())
     .then(json => {
       if (json.Status !== 'Success') throw new Error('fetch api token fail: ' + json.Message)
+      console.log('received token')
       return json.Result
     })
     .then(token => {
@@ -82,9 +84,11 @@ export function fetchURAdata () {
             return json.Result
           })
       })
+      console.log('fetching URA data')
       return Promise.all(apiCalls)
     })
     .then(results => {
+      console.log('received URA data')
       return _.flatten(results)
     })
 }

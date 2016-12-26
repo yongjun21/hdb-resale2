@@ -106,48 +106,93 @@ export default class Maps extends React.Component {
   }
 
   listAllTransactions (lat, lng, radius, month, flat_type) { //eslint-disable-line
-    if (flat_type.match(/^Private/)) return // FIXME
-    const url = window.location.protocol + '//' + window.location.host + '/nearby'
-    window.fetch(url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({lat, lng, radius})
-    }).then(res => res.json()).then(json => {
-      if (!json.length) {
-        this.setState({
-          table: {
-            title: '',
-            colNames: [],
-            rows: []
-          }
-        })
-        console.log('No result around selected location')
-        return
-      }
+    if (flat_type.match(/^Private/)) {
+      const url = `${window.location.protocol}//${window.location.host}/nearby/private`
 
-      const resID = [
-        '8c00bf08-9124-479e-aeca-7cc411d884c4',
-        '83b2fc37-ce8c-4df4-968b-370fd818138b'
-      ]
-      const resource = month < '2012-03' ? resID[0] : resID[1]
-      Promise.all(json.map(street_name => { //eslint-disable-line
-        const filters = {street_name, month}
-        if (flat_type !== 'HDB') Object.assign(filters, {flat_type}) // eslint-disable-line
-        const dataURL = `https://data.gov.sg/api/action/datastore_search?resource_id=${resource}&filters=${JSON.stringify(filters)}&limit=5000`
-        return window.fetch(dataURL)
-          .then(data => data.json())
-      }))
-      .then(results => results.reduce((records, res) => {
-        if (res.result && res.result.records) {
-          return records.concat(res.result.records)
-        } else {
-          return records
-        }
-      }, []))
-      .then(records => {
+      window.fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({lat, lng, radius, month, flat_type})
+      }).then(data => data.json())
+        .then(json => {
+          console.log(json)
+          const {projects, transactions} = json
+          if (!transactions.length) {
+            this.setState({
+              table: {
+                title: '',
+                colNames: [],
+                rows: []
+              }
+            })
+            console.log('No result around selected location')
+            return
+          }
+
+          const title = transactions.length + ' transaction' + (transactions.length > 1 ? 's' : '') +
+            ' in ' + getMonthYear(month) + ' <span class="nowrap">around selected location</span>'
+
+          const colNames = [
+            '#',
+            'District',
+            'Project Name',
+            'Street Name',
+            'Property Type',
+            'Storey Range',
+            'Sale Type',
+            'Tenure',
+            'Area (sqm)',
+            'No. of units',
+            'Price (SGD)'
+          ]
+
+          const typeOfSale = ['New Sale', 'Sub Sale', 'Resale']
+
+          const sorted = sortBy(transactions, record =>
+            (record.nettPrice || record.price) / record.noOfUnits).reverse()
+          const rows = sorted.map((t, i) => ([
+            i + 1,
+            t.district,
+            projects[t.project].project,
+            capitalizeFirstLetters(projects[t.project].street),
+            t.propertyType
+              .replace('Strata Semidetached', 'Strata Semi-D')
+              .replace('Executive Condominium', 'EC'),
+            t.floorRange,
+            typeOfSale[t.typeOfSale],
+            t.tenure.replace('lease commencing ', ''),
+            t.area,
+            t.noOfUnits,
+            (t.nettPrice || t.price).toLocaleString()
+          ]))
+
+          this.setState({
+            table: {title, colNames, rows}
+          })
+          this.map.setCenter({lat, lng})
+          this.map.setZoom(15)
+          this.map.setOptions({scrollwheel: false})
+          const scrollToTopListener = (e) => {
+            if (window.scrollY === 0) {
+              window.removeEventListener('scroll', scrollToTopListener)
+              this.map.setOptions({scrollwheel: true})
+            }
+          }
+          window.addEventListener('scroll', scrollToTopListener)
+        })
+    } else {
+      const url = window.location.protocol + '//' + window.location.host + '/nearby'
+      window.fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({lat, lng, radius})
+      }).then(res => res.json()).then(json => {
         if (!json.length) {
           this.setState({
             table: {
@@ -160,47 +205,80 @@ export default class Maps extends React.Component {
           return
         }
 
-        const title = records.length + ' transaction' + (records.length > 1 ? 's' : '') +
-          ' in ' + getMonthYear(month) + ' <span class="nowrap">around selected location</span>'
-        const colNames = [
-          '#',
-          'Block',
-          'Street Name',
-          'Flat Type',
-          'Storey Range',
-          'Lease Commence',
-          'Floor Area (sqm)',
-          'Resale Price (SGD)'
+        const resID = [
+          '8c00bf08-9124-479e-aeca-7cc411d884c4',
+          '83b2fc37-ce8c-4df4-968b-370fd818138b'
         ]
-
-        const transactions = sortBy(records,
-          record => +record.resale_price).reverse()
-        const rows = transactions.map((transaction, index) => ([
-          index + 1,
-          transaction.block.trim(),
-          capitalizeFirstLetters(transaction.street_name.trim()),
-          transaction.flat_type.trim(),
-          transaction.storey_range.trim().toLowerCase(),
-          transaction.lease_commence_date,
-          transaction.floor_area_sqm,
-          (+transaction.resale_price).toLocaleString()
-        ]))
-
-        this.setState({
-          table: {title, colNames, rows}
-        })
-        this.map.setCenter({lat, lng})
-        this.map.setZoom(15)
-        this.map.setOptions({scrollwheel: false})
-        const scrollToTopListener = (e) => {
-          if (window.scrollY === 0) {
-            window.removeEventListener('scroll', scrollToTopListener)
-            this.map.setOptions({scrollwheel: true})
+        const resource = month < '2012-03' ? resID[0] : resID[1]
+        Promise.all(json.map(street_name => { //eslint-disable-line
+          const filters = {street_name, month}
+          if (flat_type !== 'HDB') Object.assign(filters, {flat_type}) // eslint-disable-line
+          const dataURL = `https://data.gov.sg/api/action/datastore_search?resource_id=${resource}&filters=${JSON.stringify(filters)}&limit=5000`
+          return window.fetch(dataURL)
+            .then(data => data.json())
+        }))
+        .then(results => results.reduce((records, res) => {
+          if (res.result && res.result.records) {
+            return records.concat(res.result.records)
+          } else {
+            return records
           }
-        }
-        window.addEventListener('scroll', scrollToTopListener)
+        }, []))
+        .then(records => {
+          if (!json.length) {
+            this.setState({
+              table: {
+                title: '',
+                colNames: [],
+                rows: []
+              }
+            })
+            console.log('No result around selected location')
+            return
+          }
+
+          const title = records.length + ' transaction' + (records.length > 1 ? 's' : '') +
+            ' in ' + getMonthYear(month) + ' <span class="nowrap">around selected location</span>'
+          const colNames = [
+            '#',
+            'Block',
+            'Street Name',
+            'Flat Type',
+            'Storey Range',
+            'Lease Commence',
+            'Floor Area (sqm)',
+            'Resale Price (SGD)'
+          ]
+
+          const transactions = sortBy(records,
+            record => +record.resale_price).reverse()
+          const rows = transactions.map((transaction, index) => ([
+            index + 1,
+            transaction.block.trim(),
+            capitalizeFirstLetters(transaction.street_name.trim()),
+            transaction.flat_type.trim(),
+            transaction.storey_range.trim().toLowerCase(),
+            transaction.lease_commence_date,
+            transaction.floor_area_sqm,
+            (+transaction.resale_price).toLocaleString()
+          ]))
+
+          this.setState({
+            table: {title, colNames, rows}
+          })
+          this.map.setCenter({lat, lng})
+          this.map.setZoom(15)
+          this.map.setOptions({scrollwheel: false})
+          const scrollToTopListener = (e) => {
+            if (window.scrollY === 0) {
+              window.removeEventListener('scroll', scrollToTopListener)
+              this.map.setOptions({scrollwheel: true})
+            }
+          }
+          window.addEventListener('scroll', scrollToTopListener)
+        })
       })
-    })
+    }
   }
 
   componentDidMount () {

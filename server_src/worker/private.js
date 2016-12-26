@@ -55,7 +55,7 @@ export function cleanData (data) {
       if (!t.price || !t.area || !t.contractDate || !t.propertyType) return
       t.project = i
       t.month = '20' + t.contractDate.slice(2, 4) + '-' + t.contractDate.slice(0, 2)
-      t.typeOfSale = +t.typeOfSale
+      t.typeOfSale = +t.typeOfSale - 1
       t.area = +t.area
       t.price = +t.price
       t.noOfUnits = +t.noOfUnits
@@ -100,7 +100,7 @@ export function generateTimeSeries ({projects, transactions}) {
       // let loessError = []
       Object.keys(byMonth).sort().forEach(mth => {
         month.push(mth)
-        const transactionPrice = byMonth[mth].map(t => t.price / t.noOfUnits)
+        const transactionPrice = byMonth[mth].map(t => (t.nettPrice || t.price) / t.noOfUnits)
         count.push(transactionPrice.length)
         // min.push(math.min(transactionPrice))
         // max.push(math.max(transactionPrice))
@@ -147,7 +147,7 @@ export function generateHeatmap ({projects, transactions}) {
     Object.keys(byMonth).forEach(mth => {
       const dataPoints = byMonth[mth].map(t => {
         const {lat, lng, heatmapKeys} = projects[t.project]
-        return {lat, lng, heatmapKeys, weight: Math.round(t.price / t.noOfUnits / t.area)}
+        return {lat, lng, heatmapKeys, weight: Math.round((t.nettPrice || t.price) / t.area)}
       })
       heatmap.push({
         flat_type: flat,
