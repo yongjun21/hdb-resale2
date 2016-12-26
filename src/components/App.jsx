@@ -56,9 +56,10 @@ class App extends React.Component {
     this.getMeta()
     .then(meta => {
       console.log('meta loaded', meta)
-      const selectedTown = find(meta.townList, t => {
+      const townList = ['ALL', ...meta.townList, 'Private Landed', 'Private Non-landed']
+      const selectedTown = find(townList, t => {
         return serialize(t) === serialize(this.props.params.town)
-      }) || 'HDB'
+      }) || 'ALL'
       const selectedMonth = find(meta.monthList, m => {
         return serialize(m) === serialize(this.props.params.month)
       }) || meta.monthList[meta.monthList.length - 1]
@@ -74,7 +75,7 @@ class App extends React.Component {
         selectedChartType,
         selectedFlatType,
         lastUpdate: meta.lastUpdate,
-        townList: ['ALL', ...meta.townList, 'Private CCR', 'Private RCR', 'Private OCR'],
+        townList: townList,
         flatList: meta.flatList,
         monthList: meta.monthList
       })

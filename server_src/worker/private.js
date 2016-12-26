@@ -1,7 +1,6 @@
 import InitDB from '../util/InitDB'
 import {fetchURAdata} from '../util/fetchExtRes'
-import data from '../../data/private.json'
-import {smoothData} from '../util/statistics'
+// import {smoothData, getMonthIndex} from '../util/statistics'
 import {fromSVY} from '../util/geometry'
 
 import _ from 'lodash'
@@ -13,9 +12,9 @@ const db = new InitDB()
 const sgHeatmap = new SgHeatmap()
 
 const marketSegment = {
-  'Private CCR': 'CCR',
-  'Private RCR': 'RCR',
-  'Private OCR': 'OCR'
+  'Core Central Region': 'CCR',
+  'Rest of Central Region': 'RCR',
+  'Outside Central Region': 'OCR'
 }
 
 const propertyType = {
@@ -32,10 +31,6 @@ const propertyType = {
     'Condominium',
     'Executive Condominium'
   ]
-}
-
-function fetchURAdata2 () {
-  return Promise.resolve(data)
 }
 
 export function cleanData (data) {
@@ -75,25 +70,24 @@ export function saveData ({projects, transactions}) {
 
   if (!projects.length || !transactions.length) throw new Error('Empty array')
 
-  return Promise.all([
-    db.private_project.remove({}).exec()
-      .then(() => db.private_project.insertMany(projects)),
-    db.private_transaction.remove({}).exec()
-      .then(() => db.private_transaction.insertMany(transactions))
-  ]).then(() => {
-    return 'URA records saved to db'
-  })
+  return db.private_project.remove({}).exec()
+    .then(() => db.private_project.insertMany(projects))
+    .then(() => db.private_transaction.remove({}).exec())
+    .then(() => db.private_transaction.insertMany(transactions))
+    .then(() => {
+      console.log('URA records saved to db')
+    })
 }
 
 export function generateTimeSeries ({projects, transactions}) {
   console.log('generating time series')
 
   const timeSeries = []
-  Object.keys(marketSegment).forEach(town => {
-    Object.keys(propertyType).forEach(flat => {
+  Object.keys(marketSegment).forEach(flat => {
+    Object.keys(propertyType).forEach(town => {
       const filtered = transactions
-        .filter(t => projects[t.project].marketSegment === marketSegment[town])
-        .filter(t => propertyType[flat].indexOf(t.propertyType) > -1)
+        .filter(t => projects[t.project].marketSegment === marketSegment[flat])
+        .filter(t => propertyType[town].indexOf(t.propertyType) > -1)
       const byMonth = _.groupBy(filtered, t => t.month)
       const month = []
       const count = []
@@ -102,37 +96,40 @@ export function generateTimeSeries ({projects, transactions}) {
       let median = []
       let mean = []
       let std = []
-      let loess = []
-      let loessError = []
+      // let loess = []
+      // let loessError = []
       Object.keys(byMonth).sort().forEach(mth => {
         month.push(mth)
-        const transactionPrice = byMonth[mth].map(t => t.price)
+        const transactionPrice = byMonth[mth].map(t => t.price / t.noOfUnits)
         count.push(transactionPrice.length)
-        min.push(math.min(transactionPrice))
-        max.push(math.max(transactionPrice))
+        // min.push(math.min(transactionPrice))
+        // max.push(math.max(transactionPrice))
         median.push(math.median(transactionPrice))
         mean.push(math.mean(transactionPrice))
-        std.push(math.std(transactionPrice))
+        // std.push(math.std(transactionPrice))
+        min.push(0)
+        max.push(0)
+        std.push(0)
       })
       if (month.length) {
-        min = math.subtract(median, min)
-        max = math.subtract(max, median)
+        // min = math.subtract(median, min)
+        // max = math.subtract(max, median)
         mean = math.multiply(math.round(math.divide(mean, 1000)), 1000)
-        std = math.multiply(math.round(math.divide(std, 100)), 100)
-        const loessModel = smoothData(
-          mean,
-          getMonthIndex(month),
-          count,
-          std
-        )
-        loess = loessModel.loess
-        loessError = loessModel.loessError
+        // std = math.multiply(math.round(math.divide(std, 100)), 100)
+        // const loessModel = smoothData(
+        //   mean,
+        //   getMonthIndex(month),
+        //   count,
+        //   std
+        // )
+        // loess = loessModel.loess
+        // loessError = loessModel.loessError
       }
 
       timeSeries.push({
         'town': town,
         'flat_type': flat,
-        'time_series': {month, count, min, max, median, mean, std, loess, loessError}
+        'time_series': {month, count, min, max, median, mean, std}
       })
     })
   })
@@ -150,7 +147,7 @@ export function generateHeatmap ({projects, transactions}) {
     Object.keys(byMonth).forEach(mth => {
       const dataPoints = byMonth[mth].map(t => {
         const {lat, lng, heatmapKeys} = projects[t.project]
-        return {lat, lng, heatmapKeys, weight: Math.round(t.price / t.area)}
+        return {lat, lng, heatmapKeys, weight: Math.round(t.price / t.noOfUnits / t.area)}
       })
       heatmap.push({
         flat_type: flat,
@@ -163,7 +160,10 @@ export function generateHeatmap ({projects, transactions}) {
 }
 
 export function updateOneTimeSeries (data) {
-  if (!data.length) return 'Time-series updated'
+  if (!data.length) {
+    console.log('Time-series updated')
+    return
+  }
   const entry = data.pop()
   return db.time_series.findOneAndUpdate(
     {town: entry.town, flat_type: entry.flat_type},
@@ -175,7 +175,10 @@ export function updateOneTimeSeries (data) {
 }
 
 export function updateOneHeatmap (data) {
-  if (!data.length) return 'Heat maps updated'
+  if (!data.length) {
+    console.log('Heat maps updated')
+    return
+  }
   const entry = data.pop()
 
   sgHeatmap.resetState()
@@ -201,29 +204,7 @@ export function updateOneHeatmap (data) {
   ]).then(() => updateOneHeatmap(data))
 }
 
-function getMonthIndex (monthList) {
-  if (!monthList.length) return {}
-  const minMonth = _.min(monthList).replace('-', '')
-  const maxMonth = _.max(monthList).replace('-', '')
-  let yearMonth = minMonth
-  let year = +yearMonth.slice(0, 4)
-  let month = +yearMonth.slice(4, 6)
-  let index = 0
-  const monthIndex = {[yearMonth]: index}
-  while (yearMonth < maxMonth) {
-    if (month < 12) {
-      month++
-    } else {
-      year++
-      month = 1
-    }
-    yearMonth = (year * 100 + month).toString()
-    monthIndex[yearMonth] = ++index
-  }
-  return monthList.map(m => monthIndex[m.replace('-', '')])
-}
-
-fetchURAdata2()
+fetchURAdata()
   .then(cleanData)
   .then(data => {
     insideByKey(sgHeatmap)
@@ -236,15 +217,12 @@ fetchURAdata2()
     const hm = generateHeatmap(data)
     console.log('Begin updating time-series and heatmaps')
     return Promise.all([
-      saveData(data),
       updateOneTimeSeries(ts),
       updateOneHeatmap(hm)
     ])
+    // .then(() => saveData(data))
   })
-  .then(msg => {
-    msg.forEach(m => {
-      console.log(m)
-    })
+  .catch(err => {
+    console.error(err.stack)
   })
-  .catch(console.error)
   .then(db.closeConnection)

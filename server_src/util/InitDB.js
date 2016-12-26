@@ -8,7 +8,12 @@ export default class {
       process.env.HDBRESALE_MONGODB_PASSWORD + '@' +
       process.env.HDBRESALE_MONGODB_URL
 
-    mongoose.connect(dbURI)
+    const options = {
+      server: {socketOptions: {keepAlive: 300000, connectTimeoutMS: 30000}},
+      replset: {socketOptions: {keepAlive: 300000, connectTimeoutMS: 30000}}
+    }
+
+    mongoose.connect(dbURI, options)
 
     this.meta = mongoose.model('meta', new mongoose.Schema({
       lastUpdate: Date,

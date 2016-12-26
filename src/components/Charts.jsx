@@ -30,8 +30,8 @@ export default class Charts extends React.Component {
       }
       if (window.matchMedia('(max-width: 750px)').matches) {
         layout.legend = {
-          x: 0.15,
-          y: 1,
+          x: 0.1,
+          y: 1.1,
           xanchor: 'left',
           yanchor: 'top'
         }
@@ -50,24 +50,38 @@ export default class Charts extends React.Component {
   }
 
   getTitle (town, chartType) {
-    if (chartType === 'Smoothed') {
+    if (town.match(/^Private/)) {
+      if (chartType === 'Average') {
+        return (
+          <h1 className='chart-title'>
+            Past 3 Years Average <span className='nowrap'>{town} Property Prices</span>
+          </h1>
+        )
+      } else {
+        return (
+          <h1 className='chart-title'>
+            Past 3 Years Median <span className='nowrap'>{town} Property Prices</span>
+          </h1>
+        )
+      }
+    } else if (chartType === 'Smoothed') {
       return (
         <h1 className='chart-title'>
           Historial Trend of HDB Resale Prices
-          <span className='nowrap'> in {capitalizeFirstLetters(town)}</span>
+          <span className='nowrap'> in {town === 'ALL' ? 'Singapore' : capitalizeFirstLetters(town)}</span>
         </h1>
       )
     } else if (chartType === 'Average') {
       return (
         <h1 className='chart-title'>
           Historical Average of HDB Resale Prices
-          <span className='nowrap'> in {capitalizeFirstLetters(town)}</span>
+          <span className='nowrap'> in {town === 'ALL' ? 'Singapore' : capitalizeFirstLetters(town)}</span>
         </h1>
       )
     } else {
       return (
         <h1 className='chart-title'>
-          Range of Transacted Prices in {capitalizeFirstLetters(town)}
+          Range of Transacted Prices in {town === 'ALL' ? 'Singapore' : capitalizeFirstLetters(town)}
           <span className='nowrap'> (Min, Max & Median)</span>
         </h1>
       )
@@ -118,9 +132,13 @@ export default class Charts extends React.Component {
       function prepareData (chartType) {
         const datasets = []
         const datasetsReserve = []
-        sortBy(results, result => result.flat_type).reverse().forEach(result => {
+        const sorted = town.match(/^Private/)
+          ? sortBy(results, result => ['Core Central Region', 'Rest of Central Region', 'Outside Central Region'].indexOf(result.flat_type))
+          : sortBy(results, result => result.flat_type).reverse()
+        sorted.forEach(result => {
           if (result.time_series.month.length > 0) {
             if (chartType === 'Smoothed' &&
+                !town.match(/^Private/) &&
                 result.flat_type !== 'MULTI-GENERATION' &&
                 result.time_series.month.length > 100) {
               const fillx = []
@@ -175,9 +193,8 @@ export default class Charts extends React.Component {
                 },
                 type: 'scatter',
                 mode: 'markers',
-                marker: {
-                  size: 3
-                }
+                marker: {size: 3},
+                line: {width: 1}
               }
               if (chartType === 'Average') {
                 dataset.y = result.time_series.mean
@@ -188,6 +205,7 @@ export default class Charts extends React.Component {
                 dataset.error_y.array = result.time_series.max
                 dataset.error_y.arrayminus = result.time_series.min
               }
+              if (result.town.match(/^Private/)) dataset.mode = 'lines+markers'
               datasets.push(dataset)
             }
           }
@@ -228,10 +246,16 @@ export default class Charts extends React.Component {
       .then(data => data.json())
       .then(json => {
         console.log(json)
-        const title =
-          'Transactions Records for ' + capitalizeFirstLetters(flat_type) +
+        const title = town === 'ALL' ? (
+          'Transaction Records for <span class="nowrap">' +
+          capitalizeFirstLetters(flat_type) + ' HDB Flats in ' +
+          getMonthYear(date) + '</span>'
+        ) : (
+          'Transaction Records for ' + capitalizeFirstLetters(flat_type) +
           ' Flats <span class="nowrap">in ' + capitalizeFirstLetters(town) +
           ' in ' + getMonthYear(date) + '</span>'
+        )
+
         const colNames = [
           '#',
           'Block',
@@ -241,18 +265,23 @@ export default class Charts extends React.Component {
           'Floor Area (sqm)',
           'Resale Price (SGD)'
         ]
+        if (town === 'ALL') colNames.splice(1, 0, 'Town')
 
         const transactions = sortBy(json.result.records,
           record => +record.resale_price).reverse()
-        const rows = transactions.map((transaction, index) => ([
-          index + 1,
-          transaction.block.trim(),
-          capitalizeFirstLetters(transaction.street_name.trim()),
-          transaction.storey_range.trim().toLowerCase(),
-          transaction.lease_commence_date,
-          transaction.floor_area_sqm,
-          (+transaction.resale_price).toLocaleString()
-        ]))
+        const rows = transactions.map((transaction, index) => {
+          const row = [
+            index + 1,
+            transaction.block.trim(),
+            capitalizeFirstLetters(transaction.street_name.trim()),
+            transaction.storey_range.trim().toLowerCase(),
+            transaction.lease_commence_date,
+            transaction.floor_area_sqm,
+            (+transaction.resale_price).toLocaleString()
+          ]
+          if (town === 'ALL') row.splice(1, 0, transaction.town)
+          return row
+        })
 
         this.setState({
           table: {title, colNames, rows}

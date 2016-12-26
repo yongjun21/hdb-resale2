@@ -7,7 +7,6 @@ export function serialize (str) {
 
 export function capitalizeFirstLetters (phrase) {
   return phrase
-    .replace('ALL', 'SINGAPORE')
     .toLowerCase()
     .replace('/', ' / ')
     .split(' ')

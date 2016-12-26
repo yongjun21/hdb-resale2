@@ -701,6 +701,11 @@ main {
   display: none;
 }
 
+.plotly-container g.legend {
+  opacity: 0.9;
+}
+
+
 @media (max-width: 900px) {
   .header {
     flex-direction: column;

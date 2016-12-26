@@ -36,13 +36,11 @@ export default class Areas extends React.Component {
 
     console.log('retrieving data from MongoDB choropleth template')
     const url = window.location.protocol + '//' + window.location.host + '/choropleth/subzone'
-    return window.fetch(url, {
-      method: 'POST',
-      header: {Accept: 'application/json'}
-    }).then(res => res.json()).then(template => {
-      window.sessionStorage.setItem('choropleth', JSON.stringify(template))
-      return template
-    })
+    return window.fetch(url)
+      .then(res => res.json()).then(template => {
+        window.sessionStorage.setItem('choropleth', JSON.stringify(template))
+        return template
+      })
   }
 
   plotChoropleth (month, flatType) {

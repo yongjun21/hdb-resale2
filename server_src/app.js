@@ -3,6 +3,7 @@ import fallback from 'express-history-api-fallback'
 import bodyParser from 'body-parser'
 import compression from 'compression'
 import path from 'path'
+import unique from 'lodash/uniq'
 import InitDB from './util/InitDB.js'
 import {toSVY, eucliDist2} from './util/geometry'
 
@@ -14,6 +15,12 @@ const app = express()
 const root = path.join(__dirname, '../dist')
 
 const db = new InitDB()
+
+const marketSegment = {
+  'Core Central Region': 'CCR',
+  'Rest of Central Region': 'RCR',
+  'Outside Central Region': 'OCR'
+}
 
 const propertyType = {
   'Private Landed': [
@@ -113,11 +120,37 @@ Promise.all([
     })
   })
 
-  app.post('/choropleth/:level', function (req, res) {
+  app.get('/choropleth/:level', function (req, res) {
     if (req.params.level === 'region') res.json(regionSubset)
     else if (req.params.level === 'planning_area') res.json(planningAreaSubset)
     else if (req.params.level === 'subzone') res.json(subzoneSubset)
     else res.sendStatus(404)
+  })
+
+  app.get('/private_transactions', function (req, res) {
+    const query = {}
+    if (req.query.month) query.month = req.query.month
+    if (req.query.town) query.propertyType = {$in: propertyType[req.query.town]}
+    db.private_transaction.find(query).exec((err, transactions) => {
+      if (err) console.error(err.stack)
+      else {
+        const projectList = unique(transactions.map(t => t.project))
+        db.private_project.find({projectId: {$in: projectList}}).exec((err, projects) => {
+          if (err) console.error(err.stack)
+          else if (!req.query.flat_type) res.json(projects, transactions)
+          else {
+            const filteredProjects = projects.filter(p =>
+              p.marketSegment === marketSegment[req.query.flat_type])
+            const filteredTransactions = transactions.filter(t =>
+              filteredProjects.findIndex(p => p.projectId === t.project) > -1)
+            res.json({
+              projects: filteredProjects,
+              transactions: filteredTransactions
+            })
+          }
+        })
+      }
+    })
   })
 
   app.post('/nearby', function (req, res) {
@@ -144,7 +177,13 @@ Promise.all([
     }
     db.private_transaction.find(query).exec((err, docs) => {
       if (err) console.error(err.stack)
-      else res.json({projects: nearbyProjects, transactions: docs})
+      else {
+        res.json({
+          projects: nearbyProjects
+            .filter(p => docs.findIndex(t => t.project === p.projectId) > -1),
+          transactions: docs
+        })
+      }
     })
     refreshAddressCache()
   })
@@ -169,7 +208,13 @@ Promise.all([
     }
     db.private_transaction.find(query).exec((err, docs) => {
       if (err) console.error(err.stack)
-      else res.json({projects: nearbyProjects, transactions: docs})
+      else {
+        res.json({
+          projects: nearbyProjects
+            .filter(p => docs.findIndex(t => t.project === p.projectId) > -1),
+          transactions: docs
+        })
+      }
     })
     refreshAddressCache()
   })
