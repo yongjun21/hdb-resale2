@@ -1,7 +1,7 @@
 /* global L */
 import React from 'react'
 import sortBy from 'lodash/sortBy'
-import SgHeatmap from 'sg-heatmap'
+import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
 import supportLeaflet from 'sg-heatmap/dist/plugins/leaflet'
 import {insideByKey, register_LATEST} from 'sg-heatmap/dist/helpers' // eslint-disable-line
 import {YlOrRd} from 'sg-heatmap/dist/helpers/color'
@@ -34,8 +34,8 @@ export default class Areas extends React.Component {
     const template = JSON.parse(window.sessionStorage.getItem('choropleth'))
     if (template) return Promise.resolve(template)
 
-    console.log('retrieving data from MongoDB choropleth template')
-    const url = window.location.protocol + '//' + window.location.host + '/choropleth/subzone'
+    console.log('retrieving choropleth template')
+    const url = window.location.protocol + '//' + window.location.host + '/subzone_mp14.json'
     return window.fetch(url)
       .then(res => res.json()).then(template => {
         window.sessionStorage.setItem('choropleth', JSON.stringify(template))
@@ -83,7 +83,7 @@ export default class Areas extends React.Component {
     return window.fetch(url).then(res => res.json()).then(results => {
       return results.reduce((dataPoints, result) => (
         Object.assign(dataPoints, {[result.flat_type]: result.dataPoints})
-      ))
+      ), {})
     })
   }
 
@@ -340,8 +340,8 @@ export default class Areas extends React.Component {
           color: 'black',
           opacity: 1,
           fillColor: 'white',
-          fillOpacity: 0.7
-        })
+          fillOpacity: 0.4
+        }, {fillOpacity: 0.7})
         .bindTooltip(layer => layer.feature.properties.Subzone_Name)
         .on('click', event => {
           this.listAllTransactions(event.layer.feature,
