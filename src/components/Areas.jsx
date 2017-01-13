@@ -83,7 +83,7 @@ export default class Areas extends React.Component {
     return window.fetch(url).then(res => res.json()).then(results => {
       return results.reduce((dataPoints, result) => (
         Object.assign(dataPoints, {[result.flat_type]: result.dataPoints})
-      ))
+      ), {})
     })
   }
 
