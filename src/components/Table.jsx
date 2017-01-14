@@ -38,7 +38,7 @@ export default class Table extends React.Component {
       <div className='chart-detail'>
         <style>{styleBlock.join('\n')}</style>
 
-        <h2 className='chart-detail-title' ref='title' dangerouslySetInnerHTML={{__html: this.props.title}}></h2>
+        <h2 className='chart-detail-title' ref='title' dangerouslySetInnerHTML={{__html: this.props.title}} />
         <table className='chart-table'>
           <thead className='chart-table-head'><tr>{colNames}</tr></thead>
           <tbody>{rows}</tbody>

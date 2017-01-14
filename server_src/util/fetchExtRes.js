@@ -31,7 +31,7 @@ export function fetchData () {
 
 export function geocode (block, street, town) {
   const url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' +
-    block + ' ' + street.replace(/\'/, '') + ' SINGAPORE&key=' + process.env.GOOGLEMAPS_SERVER_KEY
+    block + ' ' + street.replace(/'/, '') + ' SINGAPORE&key=' + process.env.GOOGLEMAPS_SERVER_KEY
 
   return new Promise((resolve, reject) => {
     setTimeout(resolve, 150,

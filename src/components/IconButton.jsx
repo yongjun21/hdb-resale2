@@ -5,7 +5,7 @@ export default class IconButton extends React.Component {
     return (
       <button id={this.props.id} className='button'
         value={this.props.value} onClick={this.props.handleClick}>
-        <i aria-hidden='true' className={`fa ${this.props.icon}`}></i>
+        <i aria-hidden='true' className={`fa ${this.props.icon}`} />
       </button>
     )
   }

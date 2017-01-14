@@ -1,7 +1,7 @@
 /* global L */
 import React from 'react'
 import sortBy from 'lodash/sortBy'
-import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
+import SgHeatmap from 'sg-heatmap'
 import supportLeaflet from 'sg-heatmap/dist/plugins/leaflet'
 import {insideByKey, register_LATEST} from 'sg-heatmap/dist/helpers' // eslint-disable-line
 import {YlOrRd} from 'sg-heatmap/dist/helpers/color'

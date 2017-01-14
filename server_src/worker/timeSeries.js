@@ -28,7 +28,7 @@ export function processData ({data, meta}) {
       Object.keys(byMonth).sort().forEach(mth => {
         month.push(mth)
         count.push(byMonth[mth].length)
-        const resale_price = byMonth[mth].map(record => +record.resale_price)
+        const resale_price = byMonth[mth].map(record => +record.resale_price) // eslint-disable-line
         min.push(math.min(resale_price))
         max.push(math.max(resale_price))
         median.push(math.median(resale_price))
