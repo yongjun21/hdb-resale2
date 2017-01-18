@@ -225,4 +225,4 @@ fetchURAdata()
   .catch(err => {
     console.error(err.stack)
   })
-  .then(db.closeConnection)
+  .then(db.closeConnection.bind(db))
