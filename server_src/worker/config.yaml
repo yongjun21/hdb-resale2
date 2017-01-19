@@ -1,0 +1,67 @@
+apiVersion: batch/v2alpha1
+kind: ScheduledJob
+metadata:
+  name: timeseries
+spec:
+  schedule: "0 0 * * 1"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: job-container
+            image: yongjun21/hdb-resale:latest
+            command: ["node",  "server_dist/worker/timeSeries.js"]
+            env:
+              - name: HDBRESALE_MONGODB_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: hdb-resale-mongodb
+                    key: user
+              - name: HDBRESALE_MONGODB_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: hdb-resale-mongodb
+                    key: password
+              - name: HDBRESALE_MONGODB_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: hdb-resale-mongodb
+                    key: url
+          activeDeadlineSeconds: 3600
+          restartPolicy: Never
+---
+apiVersion: batch/v2alpha1
+kind: ScheduledJob
+metadata:
+  name: heatmap
+spec:
+  schedule: "0 1 * * 1"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: job-container
+            image: yongjun21/hdb-resale:latest
+            command: ["node",  "server_dist/worker/heatmap.js"]
+            env:
+              - name: HDBRESALE_MONGODB_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: hdb-resale-mongodb
+                    key: user
+              - name: HDBRESALE_MONGODB_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: hdb-resale-mongodb
+                    key: password
+              - name: HDBRESALE_MONGODB_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: hdb-resale-mongodb
+                    key: url
+          activeDeadlineSeconds: 3600
+          restartPolicy: Never
