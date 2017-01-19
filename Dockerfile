@@ -1,6 +1,16 @@
-FROM iron/node:dev
+FROM node:6-slim
 
-ADD server_dist/worker /worker
-ADD server_dist/util /util
+WORKDIR /hdb-resale
 
-RUN npm install babel-runtime jStat lodash loess mathjs mongoose node-fetch sg-heatmap
+COPY package.json webpack.prod.config.js ./
+ENV NPM_CONFIG_LOGLEVEL warn
+RUN npm install
+
+COPY src ./src
+COPY dist ./dist
+COPY server_src ./server_src
+ENV NODE_ENV=production
+RUN npm run build
+
+EXPOSE 8080
+CMD ["npm", "start"]

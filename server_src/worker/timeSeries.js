@@ -28,7 +28,7 @@ export function processData ({data, meta}) {
       Object.keys(byMonth).sort().forEach(mth => {
         month.push(mth)
         count.push(byMonth[mth].length)
-        const resale_price = byMonth[mth].map(record => +record.resale_price)
+        const resale_price = byMonth[mth].map(record => +record.resale_price) // eslint-disable-line
         min.push(math.min(resale_price))
         max.push(math.max(resale_price))
         median.push(math.median(resale_price))
@@ -106,6 +106,6 @@ Promise.all([
   console.log('Begin updating time-series')
   return {meta, msg: updateOneTimeSeries(data, meta.monthList)}
 }).then(db.updateMeta.bind(db))
-  .then(console.log)
-  .catch(console.error)
-  .then(db.closeConnection)
+  .then(console.log.bind(console))
+  .catch(console.error.bind(console))
+  .then(db.closeConnection.bind(db))

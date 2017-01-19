@@ -233,7 +233,7 @@ export default class Charts extends React.Component {
   listAllTransactions (town, flat_type, date) { // eslint-disable-line
     const month = date.slice(0, 7)
     if (town.match(/^Private/)) {
-      const dataURL = `${window.location.protocol}//${window.location.host}/private_transaction?town=${town}&flat_type=${flat_type}&month=${month}`
+      const dataURL = `${window.location.protocol}//${window.location.host}/private_transaction?town=${town}&flat_type=${flat_type}&month=${month}` // eslint-disable-line
 
       window.fetch(dataURL)
         .then(data => data.json())
@@ -241,7 +241,7 @@ export default class Charts extends React.Component {
           console.log(json)
           const {projects, transactions} = json
           const title = 'Transaction Records for <span class="nowrap">' + town +
-            ' Properties</span> <span class="nowrap">in ' + flat_type + ' in ' +
+            ' Properties</span> <span class="nowrap">in ' + flat_type + ' in ' + // eslint-disable-line
             getMonthYear(date) + '</span>'
 
           const colNames = [
@@ -372,7 +372,7 @@ export default class Charts extends React.Component {
         </div>
         <Table {...this.state.table} />
       </main>
-      )
+    )
   }
 
 }
