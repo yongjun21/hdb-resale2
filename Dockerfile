@@ -1,8 +1,9 @@
-FROM node:6
+FROM node:6-slim
 
 WORKDIR /hdb-resale
 
 COPY package.json webpack.prod.config.js ./
+ENV NPM_CONFIG_LOGLEVEL warn
 RUN npm install
 
 COPY src ./src
