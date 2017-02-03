@@ -3,7 +3,7 @@ kind: ScheduledJob
 metadata:
   name: timeseries
 spec:
-  schedule: "0 0 * * 1"
+  schedule: "0 19 * * 0"
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
@@ -37,7 +37,7 @@ kind: ScheduledJob
 metadata:
   name: heatmap
 spec:
-  schedule: "0 1 * * 1"
+  schedule: "0 20 * * 0"
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
