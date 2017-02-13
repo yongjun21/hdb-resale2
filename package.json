@@ -13,7 +13,7 @@
     "deploy": "npm run docker-build && npm run docker-push && oc import-image yongjun21/hdb-resale:latest",
     "docker-build": "npm run build && docker build -t yongjun21/hdb-resale:latest .",
     "docker-push": "docker push yongjun21/hdb-resale:latest",
-    "setup-cron": "oc replace -f server_src/worker/config.yaml",
+    "setup-cron": "oc create -f server_src/worker/secret.yaml && oc create -f server_src/worker/scheduledJob.yaml",
     "postinstall": "npm run build"
   },
   "repository": {

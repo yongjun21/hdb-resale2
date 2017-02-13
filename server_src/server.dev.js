@@ -2,7 +2,7 @@ import webpack from 'webpack'
 import WebpackDevServer from 'webpack-dev-server'
 import config from '../webpack.dev.config'
 
-export default function () {
+module.exports = function () {
   let server = new WebpackDevServer(webpack(config), {
     contentBase: './dist',
     hot: true,
