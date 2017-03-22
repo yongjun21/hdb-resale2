@@ -1,35 +1,27 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Router, Route, IndexRoute, Redirect, browserHistory } from 'react-router'
+import {AppContainer} from 'react-hot-loader'
 
-import App from './components/App'
-import Charts from './components/Charts'
-import Maps from './components/Maps'
-import Areas from './components/Areas'
-import About from './components/About'
-import {ChartSelector, MapSelector, AreaSelector} from './components/Selectors'
+import Router from './Router'
 
 import './css/style.css'
 
 window.PouchDB = require('pouchdb')
 
-if (process.env.NODE_ENV === 'production') {
-  console.log('GA activated')
-  browserHistory.listen(location => {
-    window.ga('set', 'page', location.pathname + location.search)
-    window.ga('send', 'pageview')
+ReactDOM.render((
+  <AppContainer>
+    <Router />
+  </AppContainer>
+), document.getElementById('root'))
+
+// Hot Module Replacement API
+if (module.hot) {
+  module.hot.accept('./Router', () => {
+    require('./Router')
+    ReactDOM.render((
+      <AppContainer>
+        <Router />
+      </AppContainer>
+    ), document.getElementById('root'))
   })
 }
-
-ReactDOM.render((
-  <Router history={browserHistory}>
-    <Route path='/' component={App}>
-      <IndexRoute components={{main: Areas, selector: AreaSelector}} />
-      <Route path='charts(/:town)' components={{main: Charts, selector: ChartSelector}} />
-      <Route path='maps(/:month)' components={{main: Maps, selector: MapSelector}} />
-      <Route path='areas(/:month)' components={{main: Areas, selector: AreaSelector}} />
-      <Route path='about' components={{main: About}} />
-      <Redirect from='*' to='/areas' />
-    </Route>
-  </Router>
-), document.getElementById('root'))

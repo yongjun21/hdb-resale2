@@ -1,24 +1,39 @@
 var path = require('path')
-var autoprefixer = require('autoprefixer')
 var webpack = require('webpack')
 
 module.exports = {
   entry: './src/index.js',
   module: {
-    loaders: [{
+    rules: [{
       test: /\.jsx?$/,
       exclude: /node_modules/,
-      loader: 'babel'
+      use: {
+        loader: 'babel-loader',
+        options: {
+          presets: [
+            ['es2015', {modules: false}],
+            'react',
+            'stage-2'
+          ],
+          plugins: [
+            'transform-runtime'
+          ]
+        }
+      }
     }, {
       test: /\.css$/,
-      loader: 'style-loader!css-loader!postcss-loader'
+      use: ['style-loader', 'css-loader', {
+        loader: 'postcss-loader',
+        options: {
+          plugins: function () {
+            return [require('autoprefixer')]
+          }
+        }
+      }]
     }]
   },
-  postcss: function () {
-    return [autoprefixer]
-  },
   resolve: {
-    extensions: ['', '.js', '.jsx']
+    extensions: ['.js', '.jsx', '.json']
   },
   output: {
     path: path.join(__dirname, '/dist'),
@@ -31,9 +46,7 @@ module.exports = {
         NODE_ENV: JSON.stringify('production')
       }
     }),
-    new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.OccurrenceOrderPlugin(),
-    new webpack.optimize.UglifyJsPlugin()
+    new webpack.optimize.UglifyJsPlugin({sourceMap: true})
   ],
   devtool: 'source-map'
 }

@@ -12,8 +12,8 @@ module.exports = function () {
     },
     stats: { colors: true }
   })
-  server.listen(9000, '0.0.0.0', function (err, result) {
+  server.listen(9000, 'localhost', function (err, result) {
     if (err) console.log(err)
-    console.log('Listening at 0.0.0.0:9000')
+    console.log('Listening at localhost:9000')
   })
 }
