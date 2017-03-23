@@ -10,6 +10,7 @@ module.exports = {
       use: {
         loader: 'babel-loader',
         options: {
+          babelrc: false,
           presets: [
             ['es2015', {modules: false}],
             'react',

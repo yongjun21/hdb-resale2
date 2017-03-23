@@ -2,7 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import {AppContainer} from 'react-hot-loader'
 
-import Router from './Router'
+import {BrowserRouter as Router} from 'react-router-dom'
+import App from './components/App'
 
 import './css/style.css'
 
@@ -10,17 +11,20 @@ window.PouchDB = require('pouchdb')
 
 ReactDOM.render((
   <AppContainer>
-    <Router />
+    <Router>
+      <App />
+    </Router>
   </AppContainer>
 ), document.getElementById('root'))
 
 // Hot Module Replacement API
 if (module.hot) {
-  module.hot.accept('./Router', () => {
-    require('./Router')
+  module.hot.accept('./components/App', () => {
     ReactDOM.render((
       <AppContainer>
-        <Router />
+        <Router>
+          <App />
+        </Router>
       </AppContainer>
     ), document.getElementById('root'))
   })

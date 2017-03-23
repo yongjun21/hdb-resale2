@@ -15,14 +15,15 @@ module.exports = {
       use: {
         loader: 'babel-loader',
         options: {
+          babelrc: false,
           presets: [
             ['es2015', {modules: false}],
             'react',
             'stage-2'
           ],
           plugins: [
-            'transform-runtime',
-            'react-hot-loader/babel'
+            'react-hot-loader/babel',
+            'transform-runtime'
           ]
         }
       }

@@ -481,6 +481,10 @@ main {
   color: #fff;
 }
 
+.navlist li a.active {
+  font-weight: bold;
+}
+
 .listType {
   display: flex;
   flex-flow: row wrap;

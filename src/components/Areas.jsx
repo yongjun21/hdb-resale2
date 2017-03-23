@@ -377,7 +377,7 @@ export default class Areas extends React.Component {
     return (
       <main>
         <h1 className='chart-title'>
-          Property123 Hotspots in {getMonthYear(this.props.selectedMonth)}
+          Property Hotspots in {getMonthYear(this.props.selectedMonth)}
         </h1>
         <div className='chart-container'>
           <div id='map' ref='map' />
