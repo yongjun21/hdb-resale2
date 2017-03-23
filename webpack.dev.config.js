@@ -1,33 +1,54 @@
 var path = require('path')
-var autoprefixer = require('autoprefixer')
-var Webpack = require('webpack')
+var webpack = require('webpack')
 
 module.exports = {
   entry: [
-    'webpack-dev-server/client?http://0.0.0.0:9000',
+    'react-hot-loader/patch',
+    'webpack-dev-server/client?http://localhost:9000',
     'webpack/hot/only-dev-server',
     './src/index.js'
   ],
   module: {
-    loaders: [{
+    rules: [{
       test: /\.jsx?$/,
       exclude: /node_modules/,
-      loader: 'babel'
+      use: {
+        loader: 'babel-loader',
+        options: {
+          babelrc: false,
+          presets: [
+            ['es2015', {modules: false}],
+            'react',
+            'stage-2'
+          ],
+          plugins: [
+            'react-hot-loader/babel',
+            'transform-runtime'
+          ]
+        }
+      }
     }, {
       test: /\.css$/,
-      loader: 'style-loader!css-loader!postcss-loader'
+      use: ['style-loader', 'css-loader', {
+        loader: 'postcss-loader',
+        options: {
+          plugins: function () {
+            return [require('autoprefixer')]
+          }
+        }
+      }]
     }]
   },
-  postcss: function () {
-    return [autoprefixer]
-  },
   resolve: {
-    extensions: ['', '.js', '.jsx']
+    extensions: ['.js', '.jsx', '.json']
   },
   output: {
     path: path.join(__dirname, '/dist'),
     publicPath: '/',
     filename: 'bundle.js'
   },
-  plugins: [new Webpack.HotModuleReplacementPlugin()]
+  plugins: [
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NamedModulesPlugin()
+  ]
 }

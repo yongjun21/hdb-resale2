@@ -1,12 +1,12 @@
 import React from 'react'
-import { Link } from 'react-router'
+import { NavLink } from 'react-router-dom'
 import { serialize } from './helpers'
 
 function createPath (view, param, query) {
-  let path = '/' + view
-  if (param) path += '/' + param
-  if (query[1]) path += `?${query[0]}=${query[1]}`
-  return path
+  let pathname = '/' + view
+  if (param) pathname += '/' + param
+  const search = query[1] ? `?${query[0]}=${query[1]}` : ''
+  return {pathname, search}
 }
 
 export default class Navigation extends React.Component {
@@ -21,10 +21,10 @@ export default class Navigation extends React.Component {
     return (
       <header className='header'>
         <ul className='navlist'>
-          <li><Link to={chartPath}>Charts</Link></li>
-          <li><Link to={mapPath}>Maps</Link></li>
-          <li><Link to={areaPath}>Areas</Link></li>
-          <li><Link to='/about'>About</Link></li>
+          <li><NavLink to={chartPath}>Charts</NavLink></li>
+          <li><NavLink to={mapPath}>Maps</NavLink></li>
+          <li><NavLink to={areaPath}>Areas</NavLink></li>
+          <li><NavLink to='/about'>About</NavLink></li>
         </ul>
         {this.props.selector}
       </header>

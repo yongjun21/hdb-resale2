@@ -2,7 +2,7 @@ import webpack from 'webpack'
 import WebpackDevServer from 'webpack-dev-server'
 import config from '../webpack.dev.config'
 
-export default function () {
+module.exports = function () {
   let server = new WebpackDevServer(webpack(config), {
     contentBase: './dist',
     hot: true,
@@ -12,8 +12,8 @@ export default function () {
     },
     stats: { colors: true }
   })
-  server.listen(9000, '0.0.0.0', function (err, result) {
+  server.listen(9000, 'localhost', function (err, result) {
     if (err) console.log(err)
-    console.log('Listening at 0.0.0.0:9000')
+    console.log('Listening at localhost:9000')
   })
 }

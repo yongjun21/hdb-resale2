@@ -2,14 +2,29 @@ import React from 'react'
 import Navigation from './Navigation'
 import Footer from './Footer'
 import Terms from './Terms'
-import { withRouter } from 'react-router'
+
+import Charts from './Charts'
+import Maps from './Maps'
+import Areas from './Areas'
+import About from './About'
+import {ChartSelector, MapSelector, AreaSelector} from './Selectors'
+
+import {
+  Route,
+  Redirect,
+  Switch,
+  withRouter,
+  matchPath
+} from 'react-router-dom'
+
+import queryString from 'query-string'
 import { serialize } from './helpers'
 import 'whatwg-fetch'
 import find from 'lodash/find'
 
 class App extends React.Component {
-  constructor () {
-    super()
+  constructor (props) {
+    super(props)
     this.state = {
       db: new window.PouchDB('hdbresale'),
       chartType: ['Average', 'Min, Max & Median', 'Smoothed'],
@@ -25,6 +40,14 @@ class App extends React.Component {
     this.updateFlatType2 = this.updateFlatType2.bind(this)
     this.toggleTerms = this.toggleTerms.bind(this)
     this.acceptTerms = this.acceptTerms.bind(this)
+
+    if (process.env.NODE_ENV === 'production') {
+      console.log('GA activated')
+      props.history.listen(location => {
+        window.ga('set', 'page', location.pathname + location.search)
+        window.ga('send', 'pageview')
+      })
+    }
   }
 
   toggleTerms (evt) {
@@ -56,18 +79,27 @@ class App extends React.Component {
     this.getMeta()
     .then(meta => {
       console.log('meta loaded', meta)
+
+      const params = {}
+      const paths = ['/charts/:town', '/maps/:month', '/areas/:month']
+      paths.forEach(path => {
+        const match = matchPath(this.props.location.pathname, {path})
+        if (match && match.params) Object.assign(params, match.params)
+      })
+      const query = queryString.parse(this.props.location.search)
+
       const townList = ['ALL', ...meta.townList, 'Private Landed', 'Private Non-landed']
       const selectedTown = find(townList, t => {
-        return serialize(t) === serialize(this.props.params.town)
+        return serialize(t) === serialize(params.town)
       }) || 'ALL'
       const selectedMonth = find(meta.monthList, m => {
-        return serialize(m) === serialize(this.props.params.month)
+        return serialize(m) === serialize(params.month)
       }) || meta.monthList[meta.monthList.length - 1]
       const selectedChartType = find(this.state.chartType, c => {
-        return serialize(c) === serialize(this.props.location.query.type)
+        return serialize(c) === serialize(query.type)
       }) || 'Smoothed'
       const selectedFlatType = find(this.state.flatType, f => {
-        return serialize(f) === serialize(this.props.location.query.flat)
+        return serialize(f) === serialize(query.flat)
       }) || 'HDB'
       this.setState({
         selectedTown,
@@ -85,17 +117,26 @@ class App extends React.Component {
 
   componentWillReceiveProps (nextProps) {
     const nextState = {}
-    const town = Array.find(this.state.townList, t => {
-      return serialize(t) === serialize(nextProps.params.town)
+
+    const params = {}
+    const paths = ['/charts/:town', '/maps/:month', '/areas/:month']
+    paths.forEach(path => {
+      const match = matchPath(nextProps.location.pathname, {path})
+      if (match && match.params) Object.assign(params, match.params)
     })
-    const month = Array.find(this.state.monthList, m => {
-      return serialize(m) === serialize(nextProps.params.month)
+    const query = queryString.parse(nextProps.location.search)
+
+    const town = find(this.state.townList, t => {
+      return serialize(t) === serialize(params.town)
     })
-    const chart = Array.find(this.state.chartType, c => {
-      return serialize(c) === serialize(nextProps.location.query.type)
+    const month = find(this.state.monthList, m => {
+      return serialize(m) === serialize(params.month)
     })
-    const flat = Array.find(this.state.flatType, f => {
-      return serialize(f) === serialize(nextProps.location.query.flat)
+    const chart = find(this.state.chartType, c => {
+      return serialize(c) === serialize(query.type)
+    })
+    const flat = find(this.state.flatType, f => {
+      return serialize(f) === serialize(query.flat)
     })
     if (town && town !== this.state.selectedTown) nextState.selectedTown = town
     if (month && month !== this.state.selectedMonth) nextState.selectedMonth = month
@@ -107,73 +148,87 @@ class App extends React.Component {
   updateTown (evt) {
     const selectedTown = evt.target.value
     if (!selectedTown) return
-    this.props.router.push({
+    this.props.history.push({
       pathname: '/charts/' + serialize(selectedTown),
-      query: {type: serialize(this.state.selectedChartType)}
+      search: queryString.stringify({type: serialize(this.state.selectedChartType)})
     })
   }
 
   updateMonth (evt) {
     const selectedMonth = evt.target.value
     if (!selectedMonth) return
-    this.props.router.push({
+    this.props.history.push({
       pathname: '/maps/' + serialize(selectedMonth),
-      query: {flat: serialize(this.state.selectedFlatType)}
+      search: queryString.stringify({flat: serialize(this.state.selectedFlatType)})
     })
   }
 
   updateMonth2 (evt) {
     const selectedMonth = evt.target.value
     if (!selectedMonth) return
-    this.props.router.push({
+    this.props.history.push({
       pathname: '/areas/' + serialize(selectedMonth),
-      query: {flat: serialize(this.state.selectedFlatType)}
+      search: queryString.stringify({flat: serialize(this.state.selectedFlatType)})
     })
   }
 
   updateChartType (evt) {
     const selectedChartType = evt.target.value
     if (!selectedChartType) return
-    this.props.router.push({
+    this.props.history.push({
       pathname: '/charts/' + serialize(this.state.selectedTown),
-      query: {type: serialize(selectedChartType)}
+      search: queryString.stringify({type: serialize(selectedChartType)})
     })
   }
 
   updateFlatType (evt) {
     const selectedFlatType = evt.target.value
     if (!selectedFlatType) return
-    this.props.router.push({
+    this.props.history.push({
       pathname: '/maps/' + serialize(this.state.selectedMonth),
-      query: {flat: serialize(selectedFlatType)}
+      search: queryString.stringify({flat: serialize(selectedFlatType)})
     })
   }
 
   updateFlatType2 (evt) {
     const selectedFlatType = evt.target.value
     if (!selectedFlatType) return
-    this.props.router.push({
+    this.props.history.push({
       pathname: '/areas/' + serialize(this.state.selectedMonth),
-      query: {flat: serialize(selectedFlatType)}
+      search: queryString.stringify({flat: serialize(selectedFlatType)})
     })
   }
 
   render () {
-    const selector = this.state.lastUpdate && (this.props.selector &&
-      React.cloneElement(this.props.selector, Object.assign({
-        updateTown: this.updateTown,
-        updateMonth: this.updateMonth,
-        updateMonth2: this.updateMonth2,
-        updateChartType: this.updateChartType,
-        updateFlatType: this.updateFlatType,
-        updateFlatType2: this.updateFlatType2
-      }, this.state)))
+    const selectorProps = Object.assign({
+      updateTown: this.updateTown,
+      updateMonth: this.updateMonth,
+      updateMonth2: this.updateMonth2,
+      updateChartType: this.updateChartType,
+      updateFlatType: this.updateFlatType,
+      updateFlatType2: this.updateFlatType2
+    }, this.state)
+    const selector = this.state.lastUpdate && (
+      <Switch>
+        <Route path='/charts/:town?' render={props => <ChartSelector {...props} {...selectorProps} />} />
+        <Route path='/maps/:month?' render={props => <MapSelector {...props} {...selectorProps} />} />
+        <Route path='/areas/:month?' render={props => <AreaSelector {...props} {...selectorProps} />} />
+      </Switch>
+    )
 
-    const main = this.state.lastUpdate && (this.props.main &&
-      React.cloneElement(this.props.main, Object.assign({
-        updateMonth: this.updateMonth,
-        updateMonth2: this.updateMonth2
-      }, this.state)))
+    const mainProps = Object.assign({
+      updateMonth: this.updateMonth,
+      updateMonth2: this.updateMonth2
+    }, this.state)
+    const main = this.state.lastUpdate && (
+      <Switch>
+        <Route path='/charts/:town?' render={props => <Charts {...props} {...mainProps} />} />
+        <Route path='/maps/:month?' render={props => <Maps {...props} {...mainProps} />} />
+        <Route path='/areas/:month?' render={props => <Areas {...props} {...mainProps} />} />
+        <Route path='/about' component={About} />
+        <Redirect from='/*' to='/areas' />
+      </Switch>
+    )
 
     return (
       <div className='container'>
@@ -187,11 +242,9 @@ class App extends React.Component {
 }
 
 App.propTypes = {
-  params: React.PropTypes.object,
+  match: React.PropTypes.object,
   location: React.PropTypes.object,
-  router: React.PropTypes.object,
-  main: React.PropTypes.element.isRequired,
-  selector: React.PropTypes.element.isRequired
+  history: React.PropTypes.object
 }
 
 export default withRouter(App)

@@ -4,5 +4,6 @@ dist/bundle.js.map
 server_dist/
 data/
 iron.json
+server_src/worker/secret.yaml
 .DS_Store
 *.log

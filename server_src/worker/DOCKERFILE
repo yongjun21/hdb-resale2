@@ -1,8 +1,0 @@
-FROM iron/node:dev
-
-WORKDIR /hdb-resale
-
-RUN npm install babel-runtime jStat lodash loess mathjs mongoose node-fetch sg-heatmap
-
-ADD server_dist/worker ./worker
-ADD server_dist/util ./util
