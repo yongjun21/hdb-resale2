@@ -25,7 +25,7 @@ export function populateHeatMap (addressBook, filtered) {
       address = geocode(record.block.trim(), record.street_name.trim(), record.town.trim())
     }
     return address.then(address => {
-      if (address) {
+      if (address && address.lat && address.lng) {
         if (!address.flag) {
           const heatmapKeys = new Set()
           choropleth.bin([address.lng, address.lat]).forEach(match => {
@@ -38,7 +38,6 @@ export function populateHeatMap (addressBook, filtered) {
           addressBook.push(address)
           console.log('New address:', address)
         }
-        if (!address.lng || !address.lat) return
         const dataPoint = {
           lat: address.lat,
           lng: address.lng,
@@ -65,7 +64,6 @@ export function populateHeatMap (addressBook, filtered) {
     promiseChain.then(() => resolveAddress(record)), Promise.resolve())
     .then(() => {
       return {
-        lastMonth: _.maxBy(filtered, 'month').month,
         newAddresses: addressBook.slice(lastIdx),
         heatmap,
         unresolved
@@ -118,25 +116,28 @@ Promise.all([
 ]).then(([meta, addressBook, data]) => {
   console.log('Continue from: ', meta.lastHeatmap)
   const filtered = data.filter(record => record.month >= meta.lastHeatmap)
+  const lastMonth = _.max(data.map(row => row.month))
   return populateHeatMap(addressBook, filtered)
-}).then(({lastMonth, newAddresses, heatmap, unresolved}) => {
-  console.log('Begin updating heat maps')
-  if (unresolved.length) {
-    console.log('UNRESOLVED ADDRESSES')
-    unresolved.forEach(console.log)
-  }
-  insideByKey(choropleth)
-  register_MEAN(choropleth)
-    .registerStat('sumNcount', function (state) {
-      return {sum: state._sum, count: state._count}
+    .then(({newAddresses, heatmap, unresolved}) => {
+      console.log('Begin updating heat maps')
+      if (unresolved.length) {
+        console.log(unresolved.length, 'ADDRESSES UNRESOLVED')
+        unresolved.forEach(console.log.bind(console))
+      }
+      insideByKey(choropleth)
+      register_MEAN(choropleth)
+        .registerStat('sumNcount', function (state) {
+          return {sum: state._sum, count: state._count}
+        })
+      return Promise.all([
+        updateOneHeatmap(heatmap),
+        updateOneAddress(newAddresses)
+      ])
     })
-  return Promise.all([
-    updateOneHeatmap(heatmap),
-    updateOneAddress(newAddresses)
-  ]).then(msg => ({
-    meta: {lastHeatmap: lastMonth},
-    msg: msg.join(', ')
-  }))
+    .then(msg => ({
+      meta: {lastHeatmap: lastMonth},
+      msg: msg.join(', ')
+    }))
 }).then(db.updateMeta.bind(db))
   .then(console.log.bind(console))
   .catch(console.error.bind(console))

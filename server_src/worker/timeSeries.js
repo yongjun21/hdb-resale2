@@ -104,7 +104,7 @@ Promise.all([
   return processData({data, meta: {townList, flatList, monthList}})
 }).then(({data, meta}) => {
   console.log('Begin updating time-series')
-  return {meta, msg: updateOneTimeSeries(data, meta.monthList)}
+  return updateOneTimeSeries(data, meta.monthList).then(msg => ({meta, msg}))
 }).then(db.updateMeta.bind(db))
   .then(console.log.bind(console))
   .catch(console.error.bind(console))
