@@ -6,7 +6,8 @@ import path from 'path'
 import unique from 'lodash/uniq'
 import keyBy from 'lodash/keyBy'
 import InitDB from './util/InitDB.js'
-import {toSVY, eucliDist2} from './util/geometry'
+import {eucliDist2} from './util/geometry'
+import {toSVY21} from 'sg-heatmap/dist/helpers/geometry'
 
 const app = express()
 const root = path.join(__dirname, '../dist')
@@ -132,11 +133,11 @@ app.get('/private_transaction', function (req, res) {
 
 app.post('/nearby', function (req, res) {
   const {lat, lng, radius} = req.body
-  const point = toSVY(lat, lng)
+  const point = toSVY21([lng, lat])
   const r2 = Math.pow(radius, 2)
   addressCache.hdb.then(addresses => {
     const nearbyStreets = addresses
-      .filter(a => eucliDist2(toSVY(a.lat, a.lng), point) < r2)
+      .filter(a => eucliDist2(toSVY21([a.lng, a.lat]), point) < r2)
       .reduce((streets, a) => Object.assign(streets, {[a.street]: true}), {})
     res.json(Object.keys(nearbyStreets))
   })
@@ -144,7 +145,7 @@ app.post('/nearby', function (req, res) {
 
 app.post('/nearby/private', function (req, res) {
   const {lat, lng, radius, month, flat_type} = req.body
-  const point = toSVY(lat, lng)
+  const point = toSVY21([lng, lat])
   const r2 = Math.pow(radius, 2)
   addressCache.private.then(addresses => {
     const nearbyProjects = addresses

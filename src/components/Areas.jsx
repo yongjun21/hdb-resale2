@@ -2,9 +2,9 @@
 import React from 'react'
 import sortBy from 'lodash/sortBy'
 import SgHeatmap from 'sg-heatmap'
-import supportLeaflet from 'sg-heatmap/dist/plugins/leaflet'
-import {insideByKey, register_LATEST} from 'sg-heatmap/dist/helpers' // eslint-disable-line
-import {YlOrRd} from 'sg-heatmap/dist/helpers/color'
+import supportLeaflet from 'sg-heatmap/dist/es/plugins/leaflet'
+import {insideByKey, register_LATEST} from 'sg-heatmap/dist/es/helpers' // eslint-disable-line
+import {YlOrRd} from 'sg-heatmap/dist/es/helpers/color'
 
 import Table from './Table'
 import IconButton from './IconButton'
@@ -118,9 +118,7 @@ export default class Areas extends React.Component {
     Object.keys(dataPoints).forEach(key => {
       this.choropleth.update([key], dataPoints[key].sum / dataPoints[key].count)
     })
-    const stat = this.choropleth.getStat('latest')
-    const colorScale = YlOrRd([stat.min, stat.max], 0.7)
-    this.choropleth.render('latest', colorScale)
+    this.choropleth.render('latest')
     // this.choropleth.renderer.addTo(this.map)
 
     this.setState({
@@ -334,8 +332,9 @@ export default class Areas extends React.Component {
       supportLeaflet(this.choropleth)
       insideByKey(this.choropleth)
       register_LATEST(this.choropleth)
+      const colorScale = YlOrRd(0.7)
       this.choropleth
-        .initializeRenderer({
+        .initializeRenderer(colorScale, {
           weight: 1,
           color: 'black',
           opacity: 1,

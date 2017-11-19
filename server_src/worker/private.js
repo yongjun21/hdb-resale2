@@ -1,7 +1,7 @@
 import InitDB from '../util/InitDB'
 import {fetchURAdata} from '../util/fetchExtRes'
 // import {smoothData, getMonthIndex} from '../util/statistics'
-import {fromSVY} from '../util/geometry'
+import {fromSVY21} from 'sg-heatmap/dist/helpers/geometry'
 
 import _ from 'lodash'
 import math from 'mathjs'
@@ -40,7 +40,7 @@ export function cleanData (data) {
     d.projectId = i
     d.x = +d.x
     d.y = +d.y
-    const [lng, lat] = fromSVY(d.x, d.y)
+    const [lng, lat] = fromSVY21([d.x, d.y])
     d.lat = lat
     d.lng = lng
     const heatmapKeys = new Set()
