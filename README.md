@@ -1,10 +1,8 @@
 # Visualization of HDB Resale Market
 
-[![Build Status](https://travis-ci.org/yongjun21/hdb-resale.svg?branch=master)](https://travis-ci.org/yongjun21/hdb-resale) [![Dependency Status](https://gemnasium.com/yongjun21/hdb-resale.svg)](https://gemnasium.com/yongjun21/hdb-resale)
+#### Deployed at: [https://hdbresale.yongjun.sg](https://hdbresale.yongjun.sg)
 
-#### Deployed at: [https://hdbresale.daburu.xyz](https://hdbresale.daburu.xyz)
-
-[![Screenshot](./dist/img//Choropleth_Screenshot.png)](https://hdbresale.daburu.xyz/)
+[![Screenshot](./dist/img//Choropleth_Screenshot.png)](https://hdbresale.yongjun.sg/)
 
 ## Introduction
 
