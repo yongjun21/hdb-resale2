@@ -1,24 +1,28 @@
+import querystring from 'querystring'
 import fetch from 'node-fetch'
 import _ from 'lodash'
 
 export function fetchData () {
   const batchSize = 10000
-  const resID = [
-    // 'adbbddd3-30e2-445f-a123-29bee150a6fe',
-    // '8c00bf08-9124-479e-aeca-7cc411d884c4',
-    '83b2fc37-ce8c-4df4-968b-370fd818138b'
+  const datasets = [
+    // {resource_id: 'adbbddd3-30e2-445f-a123-29bee150a6fe'},
+    // {resource_id: '8c00bf08-9124-479e-aeca-7cc411d884c4'},
+    // {resource_id: '83b2fc37-ce8c-4df4-968b-370fd818138b'}
+    {resource_id: '83b2fc37-ce8c-4df4-968b-370fd818138b', q: JSON.stringify({month: '2017'})}
   ]
 
   function fetchOneDataset (dataset, offset, records) {
-    const fetchURL =
-      'https://data.gov.sg/api/action/datastore_search?' +
-      'resource_id=' + dataset + '&sort=_id&' +
-      'limit=' + batchSize + '&offset=' + offset
+    const query = Object.assign({
+      limit: batchSize,
+      offset: offset,
+      sort: '_id'
+    }, dataset)
+    const fetchURL = 'https://data.gov.sg/api/action/datastore_search?' + querystring.stringify(query)
     return fetch(fetchURL)
       .then(data => data.json())
       .then(json => {
         records = records.concat(json.result.records)
-        console.log('fetchOneDataset', dataset, offset)
+        console.log('fetchOneDataset', dataset.resource_id, offset)
         if (offset + batchSize < json.result.total) return fetchOneDataset(dataset, offset + batchSize, records)
         else return records
       })
@@ -27,7 +31,7 @@ export function fetchData () {
       })
   }
 
-  return Promise.all(resID.map(dataset => fetchOneDataset(dataset, 0, [])))
+  return Promise.all(datasets.map(dataset => fetchOneDataset(dataset, 0, [])))
     .then(recordSet => recordSet.reduce((combined, records) => combined.concat(records), []))
 }
 

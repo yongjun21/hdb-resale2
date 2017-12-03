@@ -28,7 +28,7 @@ class App extends React.Component {
     this.state = {
       db: new window.PouchDB('hdbresale'),
       chartType: ['Average', 'Min, Max & Median', 'Smoothed'],
-      flatType: ['HDB', '3 ROOM', '4 ROOM', '5 ROOM', 'Private Landed', 'Private Non-landed'],
+      flatType: ['HDB', '3 ROOM', '4 ROOM', '5 ROOM'],
       hideTerms: true
     }
 
@@ -88,7 +88,7 @@ class App extends React.Component {
       })
       const query = queryString.parse(this.props.location.search)
 
-      const townList = ['ALL', ...meta.townList, 'Private Landed', 'Private Non-landed']
+      const townList = ['ALL', ...meta.townList]
       const selectedTown = find(townList, t => {
         return serialize(t) === serialize(params.town)
       }) || 'ALL'

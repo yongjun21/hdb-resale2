@@ -15,7 +15,7 @@ export function processData ({data, meta}) {
     flatList.forEach(function (flat) {
       const byMonth = _(data)
         .filter(record => town === 'ALL' || record.town.trim() === town)
-        .filter(record => record.flat_type.trim() === flat)
+        .filter(record => record.flat_type.trim().replace('-', ' ') === flat)
         .groupBy(record => record.month)
         .value()
       const month = []
@@ -90,15 +90,23 @@ Promise.all([
   let townList = {}
   let flatList = {}
   let monthList = {}
+  meta.townList.forEach(town => {
+    townList[town] = true
+  })
+  meta.flatList.forEach(flat => {
+    flatList[flat] = true
+  })
+  meta.monthList.forEach(month => {
+    monthList[month] = true
+  })
   data.forEach(record => {
     townList[record.town.trim()] = true
-    flatList[record.flat_type.trim()] = true
+    flatList[record.flat_type.trim().replace('-', ' ')] = true
     monthList[record.month] = true
   })
   townList = Object.keys(townList).sort()
   flatList = Object.keys(flatList).sort()
   monthList = Object.keys(monthList).sort()
-  monthList = meta.old_monthList.concat(monthList)
   console.log('Records retrieved:', data.length)
 
   return processData({data, meta: {townList, flatList, monthList}})

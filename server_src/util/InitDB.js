@@ -20,8 +20,7 @@ export default class {
       lastHeatmap: String,
       townList: [String],
       flatList: [String],
-      monthList: [String],
-      old_monthList: [String]
+      monthList: [String]
     }))
 
     this.time_series = mongoose.model('time_series', new mongoose.Schema({
