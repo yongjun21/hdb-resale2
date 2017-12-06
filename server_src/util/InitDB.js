@@ -3,14 +3,14 @@ mongoose.Promise = Promise
 
 export default class {
   constructor () {
-    const dbURI = 'mongodb://' +
-      process.env.HDBRESALE_MONGODB_USER + ':' +
-      process.env.HDBRESALE_MONGODB_PASSWORD + '@' +
-      process.env.HDBRESALE_MONGODB_URL
+    const dbURI = 'mongodb://' + process.env.HDBRESALE_MONGODB_URL
 
     const options = {
-      server: {socketOptions: {keepAlive: 300000, connectTimeoutMS: 30000}},
-      replset: {socketOptions: {keepAlive: 300000, connectTimeoutMS: 30000}}
+      user: process.env.HDBRESALE_MONGODB_USER,
+      pass: process.env.HDBRESALE_MONGODB_PASSWORD,
+      useMongoClient: true,
+      keepAlive: 300000,
+      connectTimeoutMS: 30000
     }
 
     mongoose.connect(dbURI, options)

@@ -14,12 +14,19 @@ export function capitalizeFirstLetters (phrase) {
     .join(' ')
 }
 
+export function parseDate (dateStr) {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  return date.getDate() + ' ' + getMonthYear(dateStr)
+}
+
 export function getMonthYear (dateStr) {
+  const date = new Date(dateStr)
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ]
-  return monthNames[+dateStr.slice(5, 7) - 1] + ' ' + dateStr.slice(0, 4)
+  return monthNames[date.getMonth()] + ' ' + date.getFullYear()
 }
 
 export const googleMapsStyles = {

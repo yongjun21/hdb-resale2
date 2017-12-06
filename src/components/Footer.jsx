@@ -1,9 +1,5 @@
 import React from 'react'
-import { getMonthYear } from './helpers'
-
-function parseDate (date) {
-  return date ? date.slice(8, 10) + ' ' + getMonthYear(date) : ''
-}
+import {parseDate} from './helpers'
 
 export default class Footer extends React.Component {
   render () {
