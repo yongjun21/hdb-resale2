@@ -284,10 +284,15 @@ export default class Charts extends React.Component {
         })
     } else {
       const resID = [
+        'adbbddd3-30e2-445f-a123-29bee150a6fe',
         '8c00bf08-9124-479e-aeca-7cc411d884c4',
-        '83b2fc37-ce8c-4df4-968b-370fd818138b'
+        '83b2fc37-ce8c-4df4-968b-370fd818138b',
+        '1b702208-44bf-4829-b620-4615ee19b57c'
       ]
-      const resource = month < '2012-03' ? resID[0] : resID[1]
+      const resource =
+        month < '2000-01' ? resID[0]
+      : month < '2012-03' ? resID[1]
+      : month < '2015-01' ? resID[2] : resID[3]
       const filters = {town, flat_type, month}
       if (town === 'ALL') delete filters.town
       const dataURL = `https://data.gov.sg/api/action/datastore_search?resource_id=${resource}&filters=${JSON.stringify(filters)}&limit=5000`
