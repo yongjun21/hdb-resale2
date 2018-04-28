@@ -57,7 +57,7 @@ export default class {
       town: String,
       street: String,
       block: String,
-      postalCode: Number,
+      postalCode: String,
       lng: Number,
       lat: Number,
       heatmapKeys: [String]

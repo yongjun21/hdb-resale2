@@ -7,7 +7,7 @@ import App from './components/App'
 
 import './css/style.css'
 
-window.PouchDB = require('pouchdb')
+window.PouchDB = require('pouchdb').default
 
 ReactDOM.render((
   <AppContainer>
