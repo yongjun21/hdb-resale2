@@ -7,11 +7,11 @@
     "start": "node server_dist/server.js",
     "dev": "babel-watch server_src/server.js",
     "build": "npm run clean && npm run build-server && npm run build-js",
+    "deploy": "heroku container:push web --app hdbresale && heroku container:release web --app hdbresale",
     "clean": "rm -rf server_dist && mkdir server_dist",
     "build-server": "babel server_src --out-dir server_dist",
     "build-js": "webpack --progress --colors --config ./webpack.prod.config.js",
     "docker-build": "npm run build && docker build -t yongjun21/hdb-resale:latest .",
-    "docker-push": "docker push yongjun21/hdb-resale:latest",
     "worker-timeseries": "node server_dist/worker/timeSeries.js",
     "worker-heatmap": "node server_dist/worker/heatmap.js",
     "postinstall": "npm run build"

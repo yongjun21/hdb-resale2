@@ -9,7 +9,8 @@ export function fetchData () {
     // {resource_id: '8c00bf08-9124-479e-aeca-7cc411d884c4'},
     // {resource_id: '83b2fc37-ce8c-4df4-968b-370fd818138b'},
     // {resource_id: '1b702208-44bf-4829-b620-4615ee19b57c'}
-    {resource_id: '1b702208-44bf-4829-b620-4615ee19b57c', q: JSON.stringify({month: '2017'})}
+    {resource_id: '1b702208-44bf-4829-b620-4615ee19b57c', q: JSON.stringify({month: '2017'})},
+    {resource_id: '1b702208-44bf-4829-b620-4615ee19b57c', q: JSON.stringify({month: '2018'})}
   ]
 
   function fetchOneDataset (dataset, offset, records) {
