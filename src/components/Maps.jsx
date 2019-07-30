@@ -209,12 +209,14 @@ export default class Maps extends React.Component {
           'adbbddd3-30e2-445f-a123-29bee150a6fe',
           '8c00bf08-9124-479e-aeca-7cc411d884c4',
           '83b2fc37-ce8c-4df4-968b-370fd818138b',
-          '1b702208-44bf-4829-b620-4615ee19b57c'
+          '1b702208-44bf-4829-b620-4615ee19b57c',
+          '42ff9cfe-abe5-4b54-beda-c88f9bb438ee'
         ]
         const resource =
           month < '2000-01' ? resID[0]
         : month < '2012-03' ? resID[1]
-        : month < '2015-01' ? resID[2] : resID[3]
+        : month < '2015-01' ? resID[2]
+        : month < '2017-01' ? resID[3] : resID[4]
         Promise.all(json.map(street_name => { //eslint-disable-line
           const filters = {street_name, month}
           if (flat_type !== 'HDB') Object.assign(filters, {flat_type}) // eslint-disable-line
