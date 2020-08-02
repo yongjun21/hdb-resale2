@@ -1,3 +1,5 @@
+/* OBSOLETE */
+
 import InitDB from '../util/InitDB'
 import {fetchURAdata} from '../util/fetchExtRes'
 // import {smoothData, getMonthIndex} from '../util/statistics'

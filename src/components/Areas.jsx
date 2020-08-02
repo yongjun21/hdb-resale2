@@ -79,7 +79,7 @@ export default class Areas extends React.Component {
 
   getData (month) {
     console.log('retrieving data from MongoDB', month)
-    const url = window.location.protocol + '//' + window.location.host + '/choropleth?month=' + month
+    const url = 'https://api.yongjun.sg/hdb/development/choropleth?month=' + month
     return window.fetch(url).then(res => res.json()).then(results => {
       return results.reduce((dataPoints, result) => (
         Object.assign(dataPoints, {[result.flat_type]: result.dataPoints})
@@ -132,7 +132,7 @@ export default class Areas extends React.Component {
 
   listAllTransactions (feature, month, flat_type) { //eslint-disable-line
     if (flat_type.match(/^Private/)) {
-      const url = `${window.location.protocol}//${window.location.host}/subzone/private`
+      const url = 'https://api.yongjun.sg/hdb/development/subzone/private'
 
       window.fetch(url, {
         method: 'POST',
@@ -208,7 +208,7 @@ export default class Areas extends React.Component {
           window.addEventListener('scroll', scrollToTopListener)
         })
     } else {
-      const url = window.location.protocol + '//' + window.location.host + '/subzone'
+      const url = 'https://api.yongjun.sg/hdb/development/subzone'
       window.fetch(url, {
         method: 'POST',
         headers: {

@@ -127,7 +127,7 @@ export default class Charts extends React.Component {
 
   getData (town) {
     console.log('retrieving data from MongoDB')
-    const url = window.location.protocol + '//' + window.location.host + '/time_series?town=' + town
+    const url = 'https://api.yongjun.sg/hdb/development/time_series?town=' + town
     return window.fetch(url).then(res => res.json()).then(results => {
       function prepareData (chartType) {
         const datasets = []
@@ -199,11 +199,14 @@ export default class Charts extends React.Component {
               if (chartType === 'Average') {
                 dataset.y = result.time_series.mean
                 dataset.error_y.array = result.time_series.std
-              } else {
+              } else if (chartType === 'Min, Max & Median') {
                 dataset.y = result.time_series.median
                 dataset.error_y.symmetric = false
                 dataset.error_y.array = result.time_series.max
                 dataset.error_y.arrayminus = result.time_series.min
+              } else if (result.flat_type === 'MULTI-GENERATION') {
+                dataset.y = result.time_series.median
+                dataset.error_y.array = result.time_series.median.map(v => 0)
               }
               if (result.town.match(/^Private/)) dataset.mode = 'lines+markers'
               datasets.push(dataset)
@@ -295,7 +298,7 @@ export default class Charts extends React.Component {
       : month < '2012-03' ? resID[1]
       : month < '2015-01' ? resID[2]
       : month < '2017-01' ? resID[3] : resID[4]
-      const filters = {town, flat_type, month}
+      const filters = {town, flat_type: flat_type.replace(/-ROOM$/g, ' ROOM'), month}
       if (town === 'ALL') delete filters.town
       const dataURL = `https://data.gov.sg/api/action/datastore_search?resource_id=${resource}&filters=${JSON.stringify(filters)}&limit=5000`
 

@@ -1,3 +1,5 @@
+/* OBSOLETE */
+
 const math = require('mathjs')
 const jStat = require('jStat').jStat
 import Loess from 'loess'

@@ -1,3 +1,5 @@
+/* OBSOLETE */
+
 const _ = require('lodash')
 const math = require('mathjs')
 

@@ -1,3 +1,5 @@
+/* OBSOLETE */
+
 import express from 'express'
 import fallback from 'express-history-api-fallback'
 import bodyParser from 'body-parser'

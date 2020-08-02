@@ -1,5 +1,7 @@
 import _ from 'lodash'
 
+/* OBSOLETE */
+
 import InitDB from '../util/InitDB.js'
 import {fetchData, geocode} from '../util/fetchExtRes.js'
 import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'

@@ -28,7 +28,7 @@ class App extends React.Component {
     this.state = {
       db: new window.PouchDB('hdbresale'),
       chartType: ['Average', 'Min, Max & Median', 'Smoothed'],
-      flatType: ['HDB', '3 ROOM', '4 ROOM', '5 ROOM'],
+      flatType: ['HDB', '3-ROOM', '4-ROOM', '5-ROOM'],
       hideTerms: true
     }
 
@@ -67,7 +67,7 @@ class App extends React.Component {
     if (meta) return Promise.resolve(meta)
 
     console.log('retrieving data from MongoDB in index.js')
-    const url = window.location.protocol + '//' + window.location.host + '/list'
+    const url = 'https://api.yongjun.sg/hdb/development/list'
     const headers = { Accept: 'application/json' }
     return window.fetch(url, headers).then(res => res.json()).then(meta => {
       window.sessionStorage.setItem('meta', JSON.stringify(meta))

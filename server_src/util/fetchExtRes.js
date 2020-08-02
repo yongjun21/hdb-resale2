@@ -1,3 +1,5 @@
+/* OBSOLETE */
+
 import querystring from 'querystring'
 import fetch from 'node-fetch'
 import _ from 'lodash'

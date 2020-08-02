@@ -61,7 +61,7 @@ export default class Maps extends React.Component {
 
   getData (month) {
     console.log('retrieving data from MongoDB', month)
-    const url = window.location.protocol + '//' + window.location.host + '/heatmap?month=' + month
+    const url = 'https://api.yongjun.sg/hdb/development/heatmap?month=' + month
     return window.fetch(url).then(res => res.json()).then(results => {
       return results.reduce((dataPoints, result) => {
         result.dataPoints.forEach(pt => {
@@ -107,7 +107,7 @@ export default class Maps extends React.Component {
 
   listAllTransactions (lat, lng, radius, month, flat_type) { //eslint-disable-line
     if (flat_type.match(/^Private/)) {
-      const url = `${window.location.protocol}//${window.location.host}/nearby/private`
+      const url = 'https://api.yongjun.sg/hdb/development/nearby/private'
 
       window.fetch(url, {
         method: 'POST',
@@ -184,7 +184,7 @@ export default class Maps extends React.Component {
           window.addEventListener('scroll', scrollToTopListener)
         })
     } else {
-      const url = window.location.protocol + '//' + window.location.host + '/nearby'
+      const url = 'https://api.yongjun.sg/hdb/development/nearby'
       window.fetch(url, {
         method: 'POST',
         headers: {
@@ -219,7 +219,7 @@ export default class Maps extends React.Component {
         : month < '2017-01' ? resID[3] : resID[4]
         Promise.all(json.map(street_name => { //eslint-disable-line
           const filters = {street_name, month}
-          if (flat_type !== 'HDB') Object.assign(filters, {flat_type}) // eslint-disable-line
+          if (flat_type !== 'HDB') Object.assign(filters, {flat_type: flat_type.replace(/-ROOM$/g, ' ROOM')}) // eslint-disable-line
           const dataURL = `https://data.gov.sg/api/action/datastore_search?resource_id=${resource}&filters=${JSON.stringify(filters)}&limit=5000`
           return window.fetch(dataURL)
             .then(data => data.json())
