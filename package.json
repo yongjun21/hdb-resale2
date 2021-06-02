@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "babel-runtime": "^6.18.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "pouchdb": "^6.4.3",
     "query-string": "^4.3.2",
     "react": "^15.3.2",
