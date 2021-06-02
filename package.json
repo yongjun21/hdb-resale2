@@ -62,7 +62,7 @@
     "standard": "^8.6.0",
     "style-loader": "^0.13.1",
     "webpack": "^2.2.1",
-    "webpack-dev-server": "^2.4.2"
+    "webpack-dev-server": "^3.1.11"
   },
   "standard": {
     "global": [
